@@ -1,0 +1,10 @@
+Package: VBspPCA
+Type: Package
+Title: Variational Bayes method for sparase nonegative matrix facttorization
+Version: 0.1
+Author: Ko Abe
+Maintainer: Ko Abe <abe.csb@tmd.ac.jp>
+Description: Efficient implementation enjoying the sparsity of the Variational Bayes method for nonnegative matrix factorization.
+License: MIT + file LICENSE
+Imports: Rcpp (>= 1.0.13), Matrix (>= 1.7)
+LinkingTo: Rcpp, RcppArmadillo

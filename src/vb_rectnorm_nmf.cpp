@@ -47,8 +47,8 @@ double up_theta(const arma::vec & y,
     den_w.fill(0);
   for(int n=0; n<y.n_rows; n++){
       double zw = arma::dot(Z.row(rowi(n)), W.row(coli(n)));
-    lp += pow(y(n)-zw,2);
-    double resid = y(n) - zw/(Z(rowi(n),l)*W(coli(n),l));
+    lp += -0.5*pow(y(n)-zw,2);
+    double resid = y(n) - (zw-(Z(rowi(n),l)*W(coli(n),l)));
         num_z(rowi(n)) += W(coli(n),l)*resid;
         num_w(coli(n)) += Z(rowi(n),l)*resid;
         den_z(rowi(n)) += W2(coli(n),l);
@@ -66,7 +66,8 @@ double up_theta(const arma::vec & y,
 
 double up_lambda(double & lambda,
                  const double & ahat, 
-                 const double & a, const double & b){
+                 const double & a,
+                 const double & b){
   double tmp = 0;
   double bhat = tmp+b;
   lambda = ahat/bhat;
@@ -77,7 +78,8 @@ double up_lambda(double & lambda,
 List doVB_norm(const arma::vec & y,
                const arma::uvec & rowi,
                const arma::uvec & coli,
-               const int & Nr, const int & Nc, 
+               const int & Nr,
+               const int & Nc, 
                const int & L,
                const int & iter,
                const double & prior_prec,

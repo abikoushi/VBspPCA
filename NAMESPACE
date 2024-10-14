@@ -1,0 +1,3 @@
+useDynLib(VBspPCA, .registration=TRUE)
+importFrom(Rcpp, evalCpp)
+import(Matrix)
