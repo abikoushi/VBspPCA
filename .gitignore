@@ -2,3 +2,7 @@
 .Rhistory
 .Rproj.user
 .Rdata
+.mtx
+src/*.o
+src/*.so
+src/*.dll
