@@ -5,7 +5,11 @@ ra1_norm <- function(a, mean, sd) {
     .Call(`_VBspPCA_ra1_norm`, a, mean, sd)
 }
 
-doVB_norm <- function(Z0, W0, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b) {
-    .Call(`_VBspPCA_doVB_norm`, Z0, W0, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b)
+doVB_norm <- function(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b) {
+    .Call(`_VBspPCA_doVB_norm`, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b)
+}
+
+doVB_norm_s <- function(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1) {
+    .Call(`_VBspPCA_doVB_norm_s`, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1)
 }
 

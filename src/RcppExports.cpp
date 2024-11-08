@@ -25,13 +25,11 @@ BEGIN_RCPP
 END_RCPP
 }
 // doVB_norm
-List doVB_norm(arma::mat Z0, arma::mat W0, const arma::vec& y, const arma::uvec& rowi, const arma::uvec& coli, const int& Nr, const int& Nc, const int& L, const int& iter, const double& prior_prec, const double& a, const double& b);
-RcppExport SEXP _VBspPCA_doVB_norm(SEXP Z0SEXP, SEXP W0SEXP, SEXP ySEXP, SEXP rowiSEXP, SEXP coliSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP LSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP) {
+List doVB_norm(const arma::vec& y, const arma::uvec& rowi, const arma::uvec& coli, const int& Nr, const int& Nc, const int& L, const int& iter, const double& prior_prec, const double& a, const double& b);
+RcppExport SEXP _VBspPCA_doVB_norm(SEXP ySEXP, SEXP rowiSEXP, SEXP coliSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP LSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type Z0(Z0SEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type W0(W0SEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type rowi(rowiSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type coli(coliSEXP);
@@ -42,14 +40,36 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type prior_prec(prior_precSEXP);
     Rcpp::traits::input_parameter< const double& >::type a(aSEXP);
     Rcpp::traits::input_parameter< const double& >::type b(bSEXP);
-    rcpp_result_gen = Rcpp::wrap(doVB_norm(Z0, W0, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b));
+    rcpp_result_gen = Rcpp::wrap(doVB_norm(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b));
+    return rcpp_result_gen;
+END_RCPP
+}
+// doVB_norm_s
+List doVB_norm_s(const arma::vec& y, const arma::uvec& rowi, const arma::uvec& coli, const int& Nr, const int& Nc, const int& L, const int& iter, const double& prior_prec, const double& a, const double& b, const double& N1);
+RcppExport SEXP _VBspPCA_doVB_norm_s(SEXP ySEXP, SEXP rowiSEXP, SEXP coliSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP LSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP, SEXP N1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type rowi(rowiSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type coli(coliSEXP);
+    Rcpp::traits::input_parameter< const int& >::type Nr(NrSEXP);
+    Rcpp::traits::input_parameter< const int& >::type Nc(NcSEXP);
+    Rcpp::traits::input_parameter< const int& >::type L(LSEXP);
+    Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const double& >::type prior_prec(prior_precSEXP);
+    Rcpp::traits::input_parameter< const double& >::type a(aSEXP);
+    Rcpp::traits::input_parameter< const double& >::type b(bSEXP);
+    Rcpp::traits::input_parameter< const double& >::type N1(N1SEXP);
+    rcpp_result_gen = Rcpp::wrap(doVB_norm_s(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_VBspPCA_ra1_norm", (DL_FUNC) &_VBspPCA_ra1_norm, 3},
-    {"_VBspPCA_doVB_norm", (DL_FUNC) &_VBspPCA_doVB_norm, 12},
+    {"_VBspPCA_doVB_norm", (DL_FUNC) &_VBspPCA_doVB_norm, 10},
+    {"_VBspPCA_doVB_norm_s", (DL_FUNC) &_VBspPCA_doVB_norm_s, 11},
     {NULL, NULL, 0}
 };
 
