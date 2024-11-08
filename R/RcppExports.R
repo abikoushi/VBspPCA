@@ -5,10 +5,6 @@ ra1_norm <- function(a, mean, sd) {
     .Call(`_VBspPCA_ra1_norm`, a, mean, sd)
 }
 
-ABsol <- function(A, B) {
-    .Call(`_VBspPCA_ABsol`, A, B)
-}
-
 doVB_norm <- function(Z0, W0, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b) {
     .Call(`_VBspPCA_doVB_norm`, Z0, W0, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b)
 }

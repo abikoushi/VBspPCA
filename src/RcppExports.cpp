@@ -24,18 +24,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// ABsol
-arma::mat ABsol(arma::mat A, arma::mat B);
-RcppExport SEXP _VBspPCA_ABsol(SEXP ASEXP, SEXP BSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(ABsol(A, B));
-    return rcpp_result_gen;
-END_RCPP
-}
 // doVB_norm
 List doVB_norm(arma::mat Z0, arma::mat W0, const arma::vec& y, const arma::uvec& rowi, const arma::uvec& coli, const int& Nr, const int& Nc, const int& L, const int& iter, const double& prior_prec, const double& a, const double& b);
 RcppExport SEXP _VBspPCA_doVB_norm(SEXP Z0SEXP, SEXP W0SEXP, SEXP ySEXP, SEXP rowiSEXP, SEXP coliSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP LSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP) {
@@ -61,7 +49,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_VBspPCA_ra1_norm", (DL_FUNC) &_VBspPCA_ra1_norm, 3},
-    {"_VBspPCA_ABsol", (DL_FUNC) &_VBspPCA_ABsol, 2},
     {"_VBspPCA_doVB_norm", (DL_FUNC) &_VBspPCA_doVB_norm, 12},
     {NULL, NULL, 0}
 };
