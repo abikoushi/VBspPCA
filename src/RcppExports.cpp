@@ -45,8 +45,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // doVB_norm_s
-List doVB_norm_s(const arma::vec& y, const arma::uvec& rowi, const arma::uvec& coli, const int& Nr, const int& Nc, const int& L, const int& iter, const double& prior_prec, const double& a, const double& b, const double& N1);
-RcppExport SEXP _VBspPCA_doVB_norm_s(SEXP ySEXP, SEXP rowiSEXP, SEXP coliSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP LSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP, SEXP N1SEXP) {
+List doVB_norm_s(const arma::vec& y, const arma::uvec& rowi, const arma::uvec& coli, const int& Nr, const int& Nc, const int& L, const int& iter, const double& prior_prec, const double& a, const double& b, const double& N1, arma::mat Z, arma::mat W, arma::mat prec_z, arma::mat prec_w);
+RcppExport SEXP _VBspPCA_doVB_norm_s(SEXP ySEXP, SEXP rowiSEXP, SEXP coliSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP LSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP, SEXP N1SEXP, SEXP ZSEXP, SEXP WSEXP, SEXP prec_zSEXP, SEXP prec_wSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -61,7 +61,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type a(aSEXP);
     Rcpp::traits::input_parameter< const double& >::type b(bSEXP);
     Rcpp::traits::input_parameter< const double& >::type N1(N1SEXP);
-    rcpp_result_gen = Rcpp::wrap(doVB_norm_s(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1));
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type W(WSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type prec_z(prec_zSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type prec_w(prec_wSEXP);
+    rcpp_result_gen = Rcpp::wrap(doVB_norm_s(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1, Z, W, prec_z, prec_w));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -69,7 +73,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_VBspPCA_ra1_norm", (DL_FUNC) &_VBspPCA_ra1_norm, 3},
     {"_VBspPCA_doVB_norm", (DL_FUNC) &_VBspPCA_doVB_norm, 10},
-    {"_VBspPCA_doVB_norm_s", (DL_FUNC) &_VBspPCA_doVB_norm_s, 11},
+    {"_VBspPCA_doVB_norm_s", (DL_FUNC) &_VBspPCA_doVB_norm_s, 15},
     {NULL, NULL, 0}
 };
 

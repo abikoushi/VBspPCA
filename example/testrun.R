@@ -13,15 +13,33 @@ miris <- as(miris, "TsparseMatrix")
 ca5 <- rgb(0,0,0,0.5)
 col3 <- hcl.colors(3, palette = "Set 2", alpha = 0.9)
 
-out <- VBPCA(miris, rank = 3, iter = 10, prior_prec = 1)
+out <- VBPCA(miris, rank = 2, iter = 10, prior_prec = 1)
 plot(out$mean_z, col=col3[iris$Species], pch=16)
 plot(out$mean_z%*%t(out$mean_w),as.matrix(miris), col=ca5)
 abline(0,1,col=ca5)
 plot(out$logprob, type="l")
 
-a=1; b=1
+length(miris)
 
+writeMM(miris, "test.mtx")
+system.time({
+  out_s <- VBspPCA:::SVBPCA("test.mtx", rank = 2,
+                            b_size = 200,
+                            subiter = 5,
+                            n_epochs = 100,  forgetting=0.9, delay=1)
+})
+#forgetting: (0.5, 1]
+#delay: >0
+plot(out_s$logprob, type="l")
+plot(out_s$mean_row%*%t(out_s$mean_col), as.matrix(miris), col=ca5)
+abline(0,1,col=ca5)
 
+out_s$prec_row
+out$prec_z
+
+out_s$prec_col
+out$prec_w
+###
 
 N1 <- length(miris@x)
 ind <- sort(sample.int(N1, 100))
@@ -30,7 +48,6 @@ subi <- miris@i[ind]
 subj <- miris@j[ind]
 
 N <- prod(miris@Dim)
-
 out_t <- VBspPCA:::doVB_norm_s(y = subx, rowi = subi, coli = subj,
                                Nr = miris@Dim[1], Nc = miris@Dim[2],
                                L=2, iter = 5,
@@ -39,9 +56,6 @@ out_t <- VBspPCA:::doVB_norm_s(y = subx, rowi = subi, coli = subj,
                                N1 = N1)
 
 plot(out_t$logprob, type = "l")
-plot(out$mean_z%*%t(out$mean_w), as.matrix(miris), col=ca5)
-abline(0,1,col=ca5)
-
 
 
 ###
@@ -72,4 +86,4 @@ plot(out_s$logprob, type="l")
 
 fit <- out_s$mean_row%*%t(out_s$mean_col)
 plot(fit, as.matrix(log1p(Y)), pch=".")
-
+abline(0,1)

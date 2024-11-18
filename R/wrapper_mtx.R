@@ -32,15 +32,16 @@ SVBPCA <- function(file_path, rank,
                     n_epochs = 100,
                     b_size = 10000,
                     learning_rate = lr_default,
-                    dataloader=dataloader_mtx, 
-                    prior_prec=1,
-                    prior_shape=1, prior_rate=1, ...){
+                    dataloader = dataloader_mtx, 
+                    prior_prec = 1,
+                    prior_shape = 1, prior_rate = 1, ...){
    #get matrix size
    con <- file(file_path, open = "r") #Open for reading in text mode
    rowsize <- scan(con, what=integer(), comment.char = "%", nmax=1,  quiet = TRUE)
    colsize <- scan(con, what=integer(), nmax=1, quiet = TRUE)
    N1 <- scan(con, what=integer(), nmax=1, quiet = TRUE)
    close(con)
+   b_size <- min(b_size, N1)
    a <- prior_shape
    b <- prior_rate
    mu_z = matrix(rnorm(rowsize * rank), rowsize, rank)
@@ -48,13 +49,21 @@ SVBPCA <- function(file_path, rank,
    Lambda_z = diag(rank)
    Lambda_w = diag(rank)
    rind <-sample.int(N1)
-   sb <- floor(N1/b_size)
-   m_sb <- b_size*sb
-    subind <- vector("list",sb+1)
-   for(i in 1:sb){
-     subind[[i]] <- rind[1:b_size+b_size*(i-1)]  
+   if(N1%%b_size==0){
+     sb <- floor(N1/b_size)
+     subind <- vector("list",sb)
+     for(i in 1:sb){
+       subind[[i]] <- rind[1:b_size+b_size*(i-1)]  
+     }
+   }else{
+     sb <- floor(N1/b_size)
+     subind <- vector("list",sb+1)
+     for(i in 1:sb){
+       subind[[i]] <- rind[1:b_size+b_size*(i-1)]  
+     }
+     subind[[sb+1]] <- rind[(b_size*sb):length(rind)] 
    }
-   subind[[sb+1]] <- rind[(b_size*sb):length(rind)]
+   #print(length(subind))
    lp <- numeric(n_epochs)
    pb <- txtProgressBar(0, n_epochs, style = 3)
    for(ep in 1:n_epochs){
@@ -65,8 +74,10 @@ SVBPCA <- function(file_path, rank,
                             Nr = rowsize, Nc = colsize,
                             L=rank, iter = subiter,
                             prior_prec = prior_prec,
-                            a, b,
-                            N1 = N1)
+                            a = a, b = b,
+                            N1 = N1,
+                            mu_z, mu_w, 
+                            Lambda_z, Lambda_w)
        Ns <- length(subind[[k]])
        rho2 <- rho*(Ns/N1)
        mu_z <- (1-rho2)*mu_z + rho2*out_t$mean_z
