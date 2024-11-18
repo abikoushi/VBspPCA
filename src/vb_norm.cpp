@@ -86,10 +86,10 @@ List doVB_norm(const arma::vec & y,
     //up_lambda(obs_prec, ahat, sumy2+R+b);
     logprob(i) = -0.5*obs_prec*(sumy2+R);
   }
-  return List::create(Named("mean_z") = Z,
-                      Named("mean_w") = W,
-                      Named("prec_z") = prec_z,
-                      Named("prec_w") = prec_w,
+  return List::create(Named("mean_row") = Z,
+                      Named("mean_col") = W,
+                      Named("prec_row") = prec_z,
+                      Named("prec_col") = prec_w,
                       Named("obs_prec") = obs_prec,
                       Named("logprob") = logprob);
 }
@@ -159,10 +159,10 @@ List doVB_norm_s(const arma::vec & y,
     //up_lambda(obs_prec, ahat, sumy2+R+b);
     logprob(i) = -0.5*obs_prec*(sumy2+R);
   }
-  return List::create(Named("mean_z") = Z,
-                      Named("mean_w") = W,
-                      Named("prec_z") = prec_z,
-                      Named("prec_w") = prec_w,
+  return List::create(Named("mean_row") = Z,
+                      Named("mean_col") = W,
+                      Named("prec_row") = prec_z,
+                      Named("prec_col") = prec_w,
                       Named("obs_prec") = obs_prec,
                       Named("logprob") = logprob);
 }

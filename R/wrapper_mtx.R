@@ -80,10 +80,10 @@ SVBPCA <- function(file_path, rank,
                             Lambda_z, Lambda_w)
        Ns <- length(subind[[k]])
        rho2 <- rho*(Ns/N1)
-       mu_z <- (1-rho2)*mu_z + rho2*out_t$mean_z
-       Lambda_z <- (1-rho2)*Lambda_z + rho2*out_t$prec_z
-       mu_w <- (1-rho2)*mu_w + rho2*out_t$mean_w
-       Lambda_w <- (1-rho2)*Lambda_z + rho2*out_t$prec_w
+       mu_z <- (1-rho2)*mu_z + rho2*out_t$mean_row
+       Lambda_z <- (1-rho2)*Lambda_z + rho2*out_t$prec_row
+       mu_w <- (1-rho2)*mu_w + rho2*out_t$mean_col
+       Lambda_w <- (1-rho2)*Lambda_z + rho2*out_t$prec_col
        lp[ep] <- lp[ep] + out_t$logprob[subiter]
      }
      setTxtProgressBar(pb,ep)
