@@ -32,10 +32,10 @@ shape paremeter of the gamma prior distribution
 }
 }
 \value{
-  \item{shape_row }{shape parameters of the posterir gamma distribution for row-axis}
-  \item{rate_row }{rate parameters of the posterir gamma distribution for row-axis}
-  \item{shape_col }{shape parameters of the posterir gamma distribution for col-axis}
-  \item{rate_col }{rate parameters of the posterir gamma distribution for col-axis}
+  \item{mean_row }{shape parameters of the posterir gamma distribution for row-axis}
+  \item{prec_row }{rate parameters of the posterir gamma distribution for row-axis}
+  \item{mean_col }{shape parameters of the posterir gamma distribution for col-axis}
+  \item{prec_col }{rate parameters of the posterir gamma distribution for col-axis}
   \item{logprob }{lower bound of the log-joint probability}
 }
 \examples{
