@@ -9,7 +9,7 @@ doVB_norm <- function(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b) {
     .Call(`_VBspPCA_doVB_norm`, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b)
 }
 
-doVB_norm_s <- function(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1, Z, W, prec_z, prec_w) {
-    .Call(`_VBspPCA_doVB_norm_s`, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1, Z, W, prec_z, prec_w)
+doVB_norm_s <- function(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1, Z, W, prec_z, prec_w, obs_prec) {
+    .Call(`_VBspPCA_doVB_norm_s`, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b, N1, Z, W, prec_z, prec_w, obs_prec)
 }
 

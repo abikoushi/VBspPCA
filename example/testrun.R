@@ -3,17 +3,18 @@ library(VBspPCA)
 #library(oocPCA)
 ###
 #M<-2
-miris <- scale(log(as.matrix(iris[,-5])), center = TRUE, scale = FALSE)
+miris <- (t(as.matrix(iris[,-5])))
 miris <- as(miris, "TsparseMatrix")
 ca5 <- rgb(0,0,0,0.5)
 col3 <- hcl.colors(3, palette = "Set 2", alpha = 0.9)
 
-out <- VBPCA(miris, rank = 2, iter = 10, prior_prec = 0.1, a=1, b=1)
-plot(out$mean_row, col=col3[iris$Species], pch=16)
-plot(out$mean_row%*%t(out$mean_col), as.matrix(miris), col=ca5)
+out <- VBPCA(miris, rank = 2, iter = 50, prior_prec = 1, a=1, b=1)
+plot(out$mean_col, col=col3[iris$Species], pch=16)
+plot(sweep(out$mean_row%*%t(out$mean_col), 1, out$mean_bias,"+"), as.matrix(miris), col=ca5)
 abline(0, 1, col=ca5)
 plot(out$logprob[-1], type="l")
-
+rowMeans(miris)
+out$mean_bias
 sqrt(1/out$obs_prec)
 
 
