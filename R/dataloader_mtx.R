@@ -2,6 +2,11 @@ lr_default <- function(t, delay=1, forgetting=0.9){
   (t+delay)^(-forgetting)
 }
 
+lr_const <- function(t, rate=0.9){
+  rate
+}
+
+
 scan1_mtx <- function(con, skip = 0){
   base::scan(con, nmax = 1, quiet=TRUE, 
              what = list(i=integer(), j=integer(), v=numeric()),

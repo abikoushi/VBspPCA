@@ -3,7 +3,7 @@ library(VBspPCA)
 #library(oocPCA)
 ###
 #M<-2
-miris <- (t(as.matrix(iris[,-5])))
+miris <- t(as.matrix(iris[,-5]))
 miris <- as(miris, "TsparseMatrix")
 ca5 <- rgb(0,0,0,0.5)
 col3 <- hcl.colors(3, palette = "Set 2", alpha = 0.9)
@@ -12,29 +12,40 @@ out <- VBPCA(miris, rank = 2, iter = 50, prior_prec = 1, a=1, b=1)
 plot(out$mean_col, col=col3[iris$Species], pch=16)
 plot(sweep(out$mean_row%*%t(out$mean_col), 1, out$mean_bias,"+"), as.matrix(miris), col=ca5)
 abline(0, 1, col=ca5)
-plot(out$logprob[-1], type="l")
+plot(out$logprob, type="l")
 rowMeans(miris)
 out$mean_bias
 sqrt(1/out$obs_prec)
 
+file_path = "test.mtx"
+rank = 2
+b_size = 100
+subiter = 5
+n_epochs = 5
+prior_prec = 1
+prior_shape = 1
+prior_rate = 1
 
 writeMM(miris, "test.mtx")
+VBspPCA:::size_mtx("test.mtx")
+
 system.time({
   out_s <- VBspPCA:::SVBPCA("test.mtx", rank = 2,
                             b_size = 100,
-                            subiter = 5,
-                            n_epochs = 500,
-                            prior_prec = 0.01,
+                            subiter = 1,
+                            n_epochs = 10,
+                            prior_prec = 1,
                             prior_shape = 1.1, prior_rate = 1.1,
-                            forgetting=0.5, delay=0.5)
+                            forgetting=0.8, delay=1)
 })
 #forgetting: (0.5, 1]
 #delay: >0
 out$obs_prec
 plot(out_s$logprob, type="l")
-plot(out_s$mean_row%*%t(out_s$mean_col), as.matrix(miris), col=ca5)
+plot(sweep(out_s$mean_row%*%t(out_s$mean_col),1,out_s$mean_bias, "+"), as.matrix(miris), col=ca5)
 abline(0,1,col=ca5)
-plot(out_s$mean_row)
+plot(out_s$mean_col)
+out_s$mean_bias
 ###
 set_data <- function(L, nrow, ncol, center=0, scale=1){
   Z <- matrix(rnorm(L*nrow,0,scale), nrow, L)
