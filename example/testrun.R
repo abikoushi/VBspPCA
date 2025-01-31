@@ -31,7 +31,7 @@ VBspPCA:::size_mtx("test.mtx")
 
 system.time({
   out_s <- VBspPCA:::SVBPCA("test.mtx", rank = 2,
-                            b_size = 100,
+                            b_size = 50,
                             subiter = 1,
                             n_epochs = 10,
                             prior_prec = 1,
@@ -44,7 +44,7 @@ out$obs_prec
 plot(out_s$logprob, type="l")
 plot(sweep(out_s$mean_row%*%t(out_s$mean_col),1,out_s$mean_bias, "+"), as.matrix(miris), col=ca5)
 abline(0,1,col=ca5)
-plot(out_s$mean_col)
+plot(out_s$mean_row)
 out_s$mean_bias
 ###
 set_data <- function(L, nrow, ncol, center=0, scale=1){

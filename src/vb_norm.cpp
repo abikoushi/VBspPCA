@@ -165,14 +165,14 @@ void up_theta_s(arma::mat & Z,
   int L = W.n_cols;
   
   const arma::mat prior = arma::diagmat(prior_prec*arma::ones<arma::vec>(L)); 
-  arma::mat ZZ = Z.t() * Z;
+  arma::mat ZZ = Z.t() * Z + cov_z;
   arma::mat WW = W.t() * W + cov_w;
-  cov_z = inv(NS*(obs_prec*WW + prior));
+  cov_w = NS*inv((obs_prec*WW + prior));
   up_eta_w(num_w, y, rowi, coli, Z, B);
   //W.rows(uid_c) = obs_prec*arma::trans(solve(NS*prec_w, num_w.rows(uid_c).t(), arma::solve_opts::likely_sympd));
   W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w;
   
-  cov_z = inv(NS*(obs_prec*WW + prior));
+  cov_z = NS*inv((obs_prec*WW + prior));
   up_eta_z(num_z, y, rowi, coli, W, B);
   Z.rows(uid_r) = obs_prec*num_z.rows(uid_r)*cov_z;
   //Z.rows(uid_r) = obs_prec*arma::trans(solve(NS*prec_z, num_z.rows(uid_r).t(), arma::solve_opts::likely_sympd));
@@ -180,7 +180,7 @@ void up_theta_s(arma::mat & Z,
   R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
   cov_B = NS/(N*obs_prec+prior_prec);
   B.rows(uid_r) = num_B.rows(uid_r)*obs_prec*cov_B;
-  R += sum(diagvec(WW*ZZ)) + sum(B%B + cov_B); //!!!
+  R += sum(diagvec(WW*ZZ)) + sum(B%B + cov_B); //!!!!
   //return obs_prec*R;
 }
 
