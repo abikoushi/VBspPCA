@@ -10,7 +10,7 @@ VBPCA <- function(Y, rank, iter=10, prior_prec=1, a = 1, b = 1){
 }
 
 SVBPCA <- function(file_path, rank,
-                   subiter = 5,
+                   subiter = 1,
                    n_epochs = 100,
                    b_size = 10000,
                    prior_prec = 1,

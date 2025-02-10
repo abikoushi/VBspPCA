@@ -58,7 +58,7 @@ double up_eta_B(arma::vec & num_B,
   double R = 0.0;
   for(int n=0; n<y.n_rows; n++){
     double mn = dot(Z.row(rowi(n)), W.row(coli(n))); 
-    R += -2.0*mn*(y(n) - B(rowi(n))) +2.0*mn*B(rowi(n))+ y2(n);
+    R += -2.0*mn*(y(n) - B(rowi(n))) + 2.0*mn*B(rowi(n))+ y2(n);
     num_B.row(rowi(n)) += y(n) - mn;
   }
   return R;
@@ -88,7 +88,7 @@ void up_theta(arma::mat & Z,
   up_eta_w(num_w, y, rowi, coli, Z, B);
   W = obs_prec*num_w*cov_w;
   arma::mat WW = W.t() * W + cov_w;
-  cov_z = inv(obs_prec*WW + prior);
+  cov_z = inv(obs_prec*WW* + prior);
   up_eta_z(num_z, y, rowi, coli, W, B);
   Z = obs_prec*num_z*cov_z;
   R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
@@ -163,25 +163,23 @@ void up_theta_s(arma::mat & Z,
   arma::mat num_w(W.n_rows, W.n_cols);
   arma::vec num_B(W.n_rows);
   int L = W.n_cols;
-  
   const arma::mat prior = arma::diagmat(prior_prec*arma::ones<arma::vec>(L)); 
+  //up Z
   arma::mat ZZ = Z.t() * Z + cov_z;
-  arma::mat WW = W.t() * W + cov_w;
-  cov_w = NS*inv((obs_prec*WW + prior));
+  cov_w = inv(obs_prec*ZZ*NS + prior);
   up_eta_w(num_w, y, rowi, coli, Z, B);
-  //W.rows(uid_c) = obs_prec*arma::trans(solve(NS*prec_w, num_w.rows(uid_c).t(), arma::solve_opts::likely_sympd));
   W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w;
-  
-  cov_z = NS*inv((obs_prec*WW + prior));
+  //up W
+  arma::mat WW = W.t() * W + cov_w;
+  cov_z = inv(obs_prec*WW*NS + prior);
   up_eta_z(num_z, y, rowi, coli, W, B);
   Z.rows(uid_r) = obs_prec*num_z.rows(uid_r)*cov_z;
-  //Z.rows(uid_r) = obs_prec*arma::trans(solve(NS*prec_z, num_z.rows(uid_r).t(), arma::solve_opts::likely_sympd));
-  
+  //up B
   R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
   cov_B = NS/(N*obs_prec+prior_prec);
   B.rows(uid_r) = num_B.rows(uid_r)*obs_prec*cov_B;
   R += sum(diagvec(WW*ZZ)) + sum(B%B + cov_B); //!!!!
-  //return obs_prec*R;
+  Rprintf("%f ", R);
 }
 
 double doVB_norm_s_sub(const arma::vec & y,
@@ -202,7 +200,6 @@ double doVB_norm_s_sub(const arma::vec & y,
                      arma::mat & cov_w,
                      double & cov_B,
                      double & obs_prec,
-                     double & ahat,
                      double & bhat){
   const arma::uvec uid_r = unique(rowi);
   const arma::uvec uid_c = unique(coli);
@@ -211,6 +208,7 @@ double doVB_norm_s_sub(const arma::vec & y,
   double R = 0;
   double S = y.n_rows;
   double NS = S/N1;
+  double ahat = 0.5*N*NS+a;
   const arma::vec y2 = pow(y,2);
   double lp;
   for (int i=0; i<iter; i++) {
@@ -260,10 +258,8 @@ List doVB_norm_s_mtx(const std::string & file_path,
     for(int step = 0; step < bags.n_cols; step++){
       arma::uvec bag = sort(bags.col(step));
       readmtx(row_i, col_i, val, file_path, bag);
-      
       arma::uvec uid_r = unique(row_i);
       arma::uvec uid_c = unique(col_i);
-      
       arma::mat Zs = Z.rows(uid_r);
       arma::mat Ws = W.rows(uid_c);
       arma::mat cov_zs = cov_z;
@@ -274,13 +270,13 @@ List doVB_norm_s_mtx(const std::string & file_path,
       rankindex(row_i, uid_r);
       rankindex(col_i, uid_c);
       lp(epoc) += doVB_norm_s_sub(val, row_i, col_i,
-         Nr, Nc, N1, L, subiter, 
-         prior_prec, a, b, 
-         Zs, Ws, Bs, cov_zs, cov_ws, cov_Bs, obs_prec, ahat, bhat_s);
+         Nr, Nc, L, subiter, 
+         prior_prec, a, b, N1,
+         Zs, Ws, Bs, cov_zs, cov_ws, cov_Bs, obs_prec, bhat_s);
       double rho = lr_default(epoc, delay, forgetting);
       double rho2 = 1-rho;
       Z.rows(uid_r) = rho2*Z.rows(uid_r) + rho*Zs;
-      W.rows(uid_c) = rho2*W.rows(uid_c)+ rho*Ws;
+      W.rows(uid_c) = rho2*W.rows(uid_c) + rho*Ws;
       B.rows(uid_r) = rho2*B.rows(uid_r) + rho*Bs;
       cov_z = rho2*cov_z + rho*cov_zs;
       cov_w = rho2*cov_w + rho*cov_ws;
@@ -300,58 +296,3 @@ List doVB_norm_s_mtx(const std::string & file_path,
                     Named("prec_rate") = bhat,
                     Named("logprob") = lp);
 }
-
-
-
-
-
-/*
-List doVB_norm_s(const arma::vec & y,
-                 const arma::uvec & rowi,
-                 const arma::uvec & coli,
-                 const int & Nr,
-                 const int & Nc,
-                 const int & L,
-                 const int & iter,
-                 const double & prior_prec,
-                 const double & a,
-                 const double & b,
-                 const double & N1, 
-                 arma::mat Z,
-                 arma::mat W,
-                 arma::vec B,
-                 arma::mat cov_z, 
-                 arma::mat cov_w,
-                 double cov_B,
-                 double obs_prec){
-  const arma::uvec uid_r = unique(rowi);
-  const arma::uvec uid_c = unique(coli);
-  arma::vec logprob = arma::zeros<arma::vec>(iter);
-  double N = Nr*Nc; //int to double
-  double ahat = 0.5*N+a;
-  double R = 0;
-  double S = y.n_rows;
-  double NS = S/N1;
-  double bhat = b;
-  const arma::vec y2 = pow(y,2);
-  for (int i=0; i<iter; i++) {
-    up_theta_s(Z, W,  B, cov_z, cov_w, cov_B, R, y, y2, rowi, coli, uid_r, uid_c, obs_prec, prior_prec, NS, N);
-    up_lambda(obs_prec, bhat, ahat, R, b);
-    logprob(i) = calc_elbo(R, obs_prec, ahat, bhat, a, b);
-  }
-  return List::create(Named("mean_row") = Z,
-                      Named("mean_col") = W,
-                      Named("mean_bias") = B,
-                      Named("cov_row") = cov_z,
-                      Named("cov_col") = cov_w,
-                      Named("cov_bias") = cov_B,
-                      Named("obs_prec") = obs_prec,
-                      Named("prec_shape") = ahat,
-                      Named("prec_rate") = bhat,
-                      Named("logprob") = logprob);
-}
-*/
-
-
-
-
