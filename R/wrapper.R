@@ -1,12 +1,31 @@
-VBPCA <- function(Y, rank, iter=10, prior_prec=1, a = 1, b = 1){
+VBPCA <- function(Y, rank, iter=10, prior_prec=1, a = 1, b = 1,
+                  use_rowintercept = TRUE){
   if(!any(class(Y)=="dgTMatrix")){
     Y <- as(Y, "TsparseMatrix")
   }
-  doVB_norm(y = Y@x, rowi = Y@i, coli = Y@j, 
-            Nr = Y@Dim[1], Nc = Y@Dim[2], 
-            L = rank,
-            iter = iter,
-            prior_prec = prior_prec, a=a, b=b)
+  if(use_rowintercept){
+    out = doVB_norm(y = Y@x, rowi = Y@i, coli = Y@j, 
+              Nr = Y@Dim[1], Nc = Y@Dim[2], 
+              L = rank,
+              iter = iter,
+              prior_prec = prior_prec, a=a, b=b)    
+  }else{
+    out = doVB_norm_woi(y = Y@x, rowi = Y@i, coli = Y@j, 
+                    Nr = Y@Dim[1], Nc = Y@Dim[2], 
+                    L = rank,
+                    iter = iter,
+                    prior_prec = prior_prec, a=a, b=b)    
+  }
+  return(out)
+}
+
+fit_pca <- function(out){
+  if(is.null(out$mean_intercept)){
+    res = out$mean_row%*%t(out$mean_col)
+  }else{
+    res = sweep(out$mean_row%*%t(out$mean_col), 1, out$mean_intercept, "+")      
+  }
+  return(res)
 }
 
 SVBPCA <- function(file_path, rank,

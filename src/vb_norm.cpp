@@ -2,25 +2,11 @@
 #include "KLgamma.h"
 #include "KLnorm.h"
 #include "readline.h"
+#include "lr.h"
+#include "ELBO.h"
+#include "lambda.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
-
-double lr_default(const double & t,
-                  const double & delay,
-                  const double & forgetting){
-  return pow(t+delay, -forgetting);
-}
-
-double calc_elbo(const double & R, const double & obs_prec,
-                 const double & ahat, const double & bhat,
-                 const double & a, const double & b){
-  return -0.5*obs_prec*R + 0.5*(R::digamma(ahat)-log(bhat)) - kl2gamma(ahat, bhat, a, b);
-}
-
-void up_lambda(double & obs_prec, double & bhat, const double & ahat, const double & R, const double & b){
-  bhat = 0.5*R+b;
-  obs_prec = ahat/bhat;
-}
 
 void up_eta_w(arma::mat & num_w,
               const arma::vec & y,
@@ -58,7 +44,7 @@ double up_eta_B(arma::vec & num_B,
   double R = 0.0;
   for(int n=0; n<y.n_rows; n++){
     double mn = dot(Z.row(rowi(n)), W.row(coli(n))); 
-    R += -2.0*mn*(y(n) - B(rowi(n))) + 2.0*mn*B(rowi(n))+ y2(n);
+    R += -2.0*mn*(y(n) - B(rowi(n))) + y2(n);
     num_B.row(rowi(n)) += y(n) - mn;
   }
   return R;
@@ -94,8 +80,7 @@ void up_theta(arma::mat & Z,
   R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
   cov_B = 1.0/(N*obs_prec+prior_prec);
   B = (num_B*obs_prec)*cov_B;
-  R += sum(arma::diagvec(WW*ZZ)) + sum(B%B + cov_B); //!!!
-  //return obs_prec*R;
+  R += arma::trace(WW*ZZ) + sum(B%B + cov_B); //!!!
 }
 
 // [[Rcpp::export]]
@@ -129,10 +114,10 @@ List doVB_norm(const arma::vec & y,
   }
   return List::create(Named("mean_row") = Z,
                       Named("mean_col") = W,
-                      Named("mean_bias") = B,
+                      Named("mean_intercept") = B,
                       Named("cov_row") = cov_z,
                       Named("cov_col") = cov_w,
-                      Named("cov_bias") = cov_B,
+                      Named("cov_intercept") = cov_B,
                       Named("obs_prec") = obs_prec,
                       Named("prec_shape") = ahat,
                       Named("prec_rate") = bhat,
@@ -176,15 +161,16 @@ void up_theta_s(arma::mat & Z,
   Z.rows(uid_r) = obs_prec*num_z.rows(uid_r)*cov_z;
   //up B
   R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
-  cov_B = NS/(N*obs_prec+prior_prec);
-  B.rows(uid_r) = num_B.rows(uid_r)*obs_prec*cov_B;
-  R += sum(diagvec(WW*ZZ)) + sum(B%B + cov_B); //!!!!
-  Rprintf("%f ", R);
+  cov_B = 1.0/(NS*N*obs_prec+prior_prec);
+  B.rows(uid_r) = obs_prec*num_B.rows(uid_r)*cov_B;
+  R += NS*(arma::trace(WW*ZZ) + sum(B%B + cov_B)); //!!!!
 }
 
 double doVB_norm_s_sub(const arma::vec & y,
                      const arma::uvec & rowi,
                      const arma::uvec & coli,
+                     const arma::uvec & uid_r,
+                     const arma::uvec & uid_c,
                      const int & Nr,
                      const int & Nc,
                      const int & L,
@@ -201,8 +187,8 @@ double doVB_norm_s_sub(const arma::vec & y,
                      double & cov_B,
                      double & obs_prec,
                      double & bhat){
-  const arma::uvec uid_r = unique(rowi);
-  const arma::uvec uid_c = unique(coli);
+  //const arma::uvec uid_r = unique(rowi);
+  //const arma::uvec uid_c = unique(coli);
   arma::vec logprob = arma::zeros<arma::vec>(iter);
   double N = Nr*Nc; //int to double
   double R = 0;
@@ -219,11 +205,13 @@ double doVB_norm_s_sub(const arma::vec & y,
   return lp;
 }
 
+/*
 void rankindex(arma::uvec & x, const arma::uvec & uid){
   for(int i=0; i<uid.n_rows; i++){
     x.rows(find(uid(i) == x)).fill(i);
   }
 }
+ */
 
 // [[Rcpp::export]]
 List doVB_norm_s_mtx(const std::string & file_path,
@@ -260,24 +248,28 @@ List doVB_norm_s_mtx(const std::string & file_path,
       readmtx(row_i, col_i, val, file_path, bag);
       arma::uvec uid_r = unique(row_i);
       arma::uvec uid_c = unique(col_i);
-      arma::mat Zs = Z.rows(uid_r);
-      arma::mat Ws = W.rows(uid_c);
+      //arma::mat Zs = Z.rows(uid_r);
+      //arma::mat Ws = W.rows(uid_c);
+      //arma::vec Bs = B.rows(uid_r);
+      arma::mat Zs = Z;
+      arma::mat Ws = W;
+      arma::vec Bs = B;
       arma::mat cov_zs = cov_z;
       arma::mat cov_ws = cov_w;
-      arma::vec Bs = B.rows(uid_r);
       double cov_Bs = cov_B;
       double bhat_s = bhat;
-      rankindex(row_i, uid_r);
-      rankindex(col_i, uid_c);
+      //rankindex(row_i, uid_r);
+      //rankindex(col_i, uid_c);
       lp(epoc) += doVB_norm_s_sub(val, row_i, col_i,
+         uid_r, uid_c,
          Nr, Nc, L, subiter, 
          prior_prec, a, b, N1,
          Zs, Ws, Bs, cov_zs, cov_ws, cov_Bs, obs_prec, bhat_s);
       double rho = lr_default(epoc, delay, forgetting);
       double rho2 = 1-rho;
-      Z.rows(uid_r) = rho2*Z.rows(uid_r) + rho*Zs;
-      W.rows(uid_c) = rho2*W.rows(uid_c) + rho*Ws;
-      B.rows(uid_r) = rho2*B.rows(uid_r) + rho*Bs;
+      Z.rows(uid_r) = rho2*Z.rows(uid_r) + rho*Zs.rows(uid_r);
+      W.rows(uid_c) = rho2*W.rows(uid_c) + rho*Ws.rows(uid_c);
+      B.rows(uid_r) = rho2*B.rows(uid_r) + rho*Bs.rows(uid_r);
       cov_z = rho2*cov_z + rho*cov_zs;
       cov_w = rho2*cov_w + rho*cov_ws;
       cov_B = rho2*cov_B + rho*cov_Bs;
@@ -287,10 +279,10 @@ List doVB_norm_s_mtx(const std::string & file_path,
   }
   return List::create(Named("mean_row") = Z,
                     Named("mean_col") = W,
-                    Named("mean_bias") = B,
+                    Named("mean_intercept") = B,
                     Named("cov_row") = cov_z,
                     Named("cov_col") = cov_w,
-                    Named("cov_bias") = cov_B,
+                    Named("cov_intercept") = cov_B,
                     Named("obs_prec") = obs_prec,
                     Named("prec_shape") = ahat,
                     Named("prec_rate") = bhat,
