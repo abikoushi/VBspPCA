@@ -53,6 +53,8 @@ double up_eta_B(arma::vec & num_B,
 void up_theta(arma::mat & Z,
                 arma::mat & W,
                 arma::vec & B,
+                arma::mat & ZZ,
+                arma::mat & WW,
                 arma::mat & cov_z,
                 arma::mat & cov_w,
                 double & cov_B,
@@ -69,18 +71,18 @@ void up_theta(arma::mat & Z,
   arma::vec num_B(B.n_rows);
   int L = W.n_cols;
   const arma::mat prior = arma::diagmat(prior_prec*arma::ones<arma::vec>(L)); 
-  arma::mat ZZ = Z.t() * Z + cov_z;
   cov_w = inv(obs_prec*ZZ + prior);
   up_eta_w(num_w, y, rowi, coli, Z, B);
   W = obs_prec*num_w*cov_w;
-  arma::mat WW = W.t() * W + cov_w;
+  WW = W.t() * W + cov_w;
   cov_z = inv(obs_prec*WW* + prior);
   up_eta_z(num_z, y, rowi, coli, W, B);
   Z = obs_prec*num_z*cov_z;
+  ZZ = Z.t() * Z + cov_z;
   R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
+  R += arma::trace(WW*ZZ) + sum(B%B + cov_B);
   cov_B = 1.0/(N*obs_prec+prior_prec);
   B = (num_B*obs_prec)*cov_B;
-  R += arma::trace(WW*ZZ) + sum(B%B + cov_B); //!!!
 }
 
 // [[Rcpp::export]]
@@ -99,6 +101,8 @@ List doVB_norm(const arma::vec & y,
   arma::vec B = arma::randn<arma::vec>(Nr);
   arma::mat cov_z = arma::diagmat(prior_prec*arma::ones<arma::vec>(L));
   arma::mat cov_w = arma::diagmat(prior_prec*arma::ones<arma::vec>(L));
+  arma::mat ZZ = Z.t() * Z;
+  arma::mat WW = W.t() * W;
   double cov_B = prior_prec;
   double obs_prec = a/b;
   arma::vec logprob = arma::zeros<arma::vec>(iter);
@@ -108,7 +112,7 @@ List doVB_norm(const arma::vec & y,
   double R = 0;
   const arma::vec y2 = pow(y,2);
   for (int i=0; i<iter; i++) {
-    up_theta(Z, W, B, cov_z, cov_w, cov_B, R, y, y2, rowi, coli, obs_prec, prior_prec, N);
+    up_theta(Z, W, B, ZZ, WW, cov_z, cov_w, cov_B, R, y, y2, rowi, coli, obs_prec, prior_prec, N);
     up_lambda(obs_prec, bhat, ahat, R, b);
     logprob(i) = calc_elbo(R, obs_prec, ahat, bhat, a, b);
   }

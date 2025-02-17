@@ -206,8 +206,8 @@ List doVB_norm_wo_s_mtx(const std::string & file_path,
   arma::mat W = arma::randn<arma::mat>(Nc, L);
   arma::mat cov_z = arma::diagmat(prior_prec*arma::ones<arma::vec>(L));
   arma::mat cov_w = arma::diagmat(prior_prec*arma::ones<arma::vec>(L));
-  arma::mat ZZ = Z.t() * Z + cov_z;
-  arma::mat WW = W.t() * W + cov_w;
+  arma::mat ZZ = Z.t() * Z;
+  arma::mat WW = W.t() * W;
   double obs_prec = a/b;
   arma::vec lp = arma::zeros<arma::vec>(iter);
   double N = Nr*Nc; //int to double
@@ -242,7 +242,7 @@ List doVB_norm_wo_s_mtx(const std::string & file_path,
       cov_w = rho2*cov_w + rho*cov_ws;
       ZZ = rho2*ZZ + rho*ZZs;
       WW = rho2*WW + rho*WWs;
-      bhat = rho2*bhat_s + rho*bhat_s;
+      bhat = rho2*bhat + rho*bhat_s;
     }
     //pb.increment();
   }
