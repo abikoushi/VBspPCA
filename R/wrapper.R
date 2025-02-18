@@ -30,7 +30,7 @@ SVBPCA <- function(file_path, rank,
                    use_rowintercept = TRUE){
   size = size_mtx(file_path)
   if(use_rowintercept){
-  out = doVB_norm_s_mtx(file_path,
+    out = doVB_norm_s_mtx(file_path,
                   size[1], size[2], size[3],
                   L = rank,
                   ns = b_size,

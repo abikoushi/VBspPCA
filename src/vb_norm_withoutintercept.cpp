@@ -8,13 +8,13 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
 
-
 void up_eta_w_woi(arma::mat & num_w,
               const arma::vec & y,
               const arma::uvec & rowi,
               const arma::uvec & coli,
               const arma::mat & Z) {
   num_w.fill(0.0);
+  //num_w.rows(coli) += (Z.rows(rowi) % y);
   for(int n=0; n<y.n_rows; n++){
     num_w.row(coli(n)) += Z.row(rowi(n))*y(n);
   }
@@ -138,17 +138,16 @@ void up_theta_woi_s(arma::mat & Z,
   int L = W.n_cols;
   const arma::mat prior = arma::diagmat(prior_prec*arma::ones<arma::vec>(L)); 
   //up Z
-  cov_w = inv(obs_prec*ZZ*NS + prior);
+  cov_w = inv(NS*obs_prec*ZZ + prior);
   up_eta_w_woi(num_w, y, rowi, coli, Z);
-  W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w;
+  W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w/NS;
   //up W
   WW = W.t() * W + cov_w;
-  cov_z = inv(obs_prec*WW*NS + prior);
+  cov_z = inv(NS*obs_prec*WW + prior);
   up_eta_z_woi(num_z, y, rowi, coli, W);
-  Z.rows(uid_r) = obs_prec*num_z.rows(uid_r)*cov_z;
+  Z.rows(uid_r) =  obs_prec*num_z.rows(uid_r)*cov_z;
   ZZ = Z.t() * Z + cov_z;
-  R = NS*(arma::trace(WW*ZZ));
-  R += residuals(y, y2, rowi, coli, Z, W);
+  R = (arma::trace(WW*ZZ)*NS + residuals(y, y2, rowi, coli, Z, W));
 }
 
 double doVB_norm_woi_s_sub(const arma::vec & y,
@@ -171,13 +170,14 @@ double doVB_norm_woi_s_sub(const arma::vec & y,
                        arma::mat & cov_z, 
                        arma::mat & cov_w,
                        double & obs_prec,
+                       double & ahat,
                        double & bhat){
   arma::vec logprob = arma::zeros<arma::vec>(iter);
   double N = Nr*Nc; //int to double
   double R = 0;
   double S = y.n_rows;
   double NS = S/N1;
-  double ahat = 0.5*N*NS+a;
+  ahat = N*NS + a;
   const arma::vec y2 = pow(y,2);
   double lp;
   for (int i=0; i<iter; i++) {
@@ -233,7 +233,7 @@ List doVB_norm_wo_s_mtx(const std::string & file_path,
       lp(epoc) += doVB_norm_woi_s_sub(val, row_i, col_i, uid_r, uid_c,
          Nr, Nc, L, subiter, 
          prior_prec, a, b, N1,
-         Zs, Ws, ZZs, WWs, cov_zs, cov_ws, obs_prec, bhat_s);
+         Zs, Ws, ZZs, WWs, cov_zs, cov_ws, obs_prec, ahat, bhat_s);
       double rho = lr_default(epoc, delay, forgetting);
       double rho2 = 1-rho;
       Z.rows(uid_r) = rho2*Z.rows(uid_r) + rho*Zs.rows(uid_r);

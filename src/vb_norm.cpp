@@ -15,6 +15,7 @@ void up_eta_w(arma::mat & num_w,
               const arma::mat & Z,
               const arma::vec & B) {
   num_w.fill(0.0);
+  //num_w.rows(coli) += Z.rows(rowi)%(y - B.rows(rowi));
   for(int n=0; n<y.n_rows; n++){
     num_w.row(coli(n)) += Z.row(rowi(n))*(y(n) - B(rowi(n)));
   }
@@ -32,7 +33,7 @@ void up_eta_z(arma::mat & num_z,
   }
 }
 
-double up_eta_B(arma::vec & num_B,
+void up_eta_B(arma::vec & num_B,
                 const arma::vec & y,
                 const arma::vec & y2,
                 const arma::uvec & rowi,
@@ -41,11 +42,20 @@ double up_eta_B(arma::vec & num_B,
                 const arma::mat & W,
                 const arma::vec & B) {
   num_B.fill(0.0);
+  for(int n=0; n<y.n_rows; n++){
+    double mn = dot(Z.row(rowi(n)), W.row(coli(n)));
+    num_B.row(rowi(n)) += y(n) - mn;
+  }
+}
+
+double residuals(const arma::vec y, const arma::vec y2, 
+                 const arma::uvec & rowi, const arma::uvec & coli,
+                 const arma::mat Z, const arma::mat W,
+                 const arma::vec & B){
   double R = 0.0;
   for(int n=0; n<y.n_rows; n++){
-    double mn = dot(Z.row(rowi(n)), W.row(coli(n))); 
+    double mn = dot(Z.row(rowi(n)), W.row(coli(n)));
     R += -2.0*mn*(y(n) - B(rowi(n))) + y2(n);
-    num_B.row(rowi(n)) += y(n) - mn;
   }
   return R;
 }
@@ -79,8 +89,9 @@ void up_theta(arma::mat & Z,
   up_eta_z(num_z, y, rowi, coli, W, B);
   Z = obs_prec*num_z*cov_z;
   ZZ = Z.t() * Z + cov_z;
-  R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
-  R += arma::trace(WW*ZZ) + sum(B%B + cov_B);
+  up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
+  R = arma::trace(WW*ZZ) + sum(B%B + cov_B);
+  R += residuals(y, y2, rowi, coli, Z,  W, B);
   cov_B = 1.0/(N*obs_prec+prior_prec);
   B = (num_B*obs_prec)*cov_B;
 }
@@ -164,10 +175,11 @@ void up_theta_s(arma::mat & Z,
   up_eta_z(num_z, y, rowi, coli, W, B);
   Z.rows(uid_r) = obs_prec*num_z.rows(uid_r)*cov_z;
   //up B
-  R = up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
+  up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
   cov_B = 1.0/(NS*N*obs_prec+prior_prec);
   B.rows(uid_r) = obs_prec*num_B.rows(uid_r)*cov_B;
-  R += NS*(arma::trace(WW*ZZ) + sum(B%B + cov_B)); //!!!!
+  R = NS*(arma::trace(WW*ZZ) + sum(B%B + cov_B)); 
+  R += residuals(y, y2, rowi, coli, Z,  W, B);
 }
 
 double doVB_norm_s_sub(const arma::vec & y,
@@ -209,13 +221,6 @@ double doVB_norm_s_sub(const arma::vec & y,
   return lp;
 }
 
-/*
-void rankindex(arma::uvec & x, const arma::uvec & uid){
-  for(int i=0; i<uid.n_rows; i++){
-    x.rows(find(uid(i) == x)).fill(i);
-  }
-}
- */
 
 // [[Rcpp::export]]
 List doVB_norm_s_mtx(const std::string & file_path,
