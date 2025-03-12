@@ -25,3 +25,7 @@ doVB_norm_wo_s_mtx <- function(file_path, Nr, Nc, N1, L, ns, iter, subiter, prio
     .Call(`_VBspPCA_doVB_norm_wo_s_mtx`, file_path, Nr, Nc, N1, L, ns, iter, subiter, prior_prec, a, b, delay, forgetting)
 }
 
+doVB_norm_woi_diag <- function(y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b) {
+    .Call(`_VBspPCA_doVB_norm_woi_diag`, y, rowi, coli, Nr, Nc, L, iter, prior_prec, a, b)
+}
+

@@ -117,61 +117,61 @@ List doVB_norm_woi(const arma::vec & y,
 //mini-batche version
 /////
 void up_theta_woi_s(arma::mat & Z, 
-                arma::mat & W,
-                arma::mat & ZZ, 
-                arma::mat & WW,
-                arma::mat & cov_z,
-                arma::mat & cov_w,
-                double & R,
-                const arma::vec & y,
-                const arma::vec & y2,
-                const arma::uvec & rowi,
-                const arma::uvec & coli,
-                const arma::uvec & uid_r,
-                const arma::uvec & uid_c,
-                const double & obs_prec,
-                const double & prior_prec,
-                const double & NS,
-                const double & N){
+                    arma::mat & W,
+                    arma::mat & ZZ, 
+                    arma::mat & WW,
+                    arma::mat & cov_z,
+                    arma::mat & cov_w,
+                    double & R,
+                    const arma::vec & y,
+                    const arma::vec & y2,
+                    const arma::uvec & rowi,
+                    const arma::uvec & coli,
+                    const arma::uvec & uid_r,
+                    const arma::uvec & uid_c,
+                    const double & obs_prec,
+                    const double & prior_prec,
+                    const double & NS,
+                    const double & N){
   arma::mat num_z(Z.n_rows, Z.n_cols);
   arma::mat num_w(W.n_rows, W.n_cols);
   int L = W.n_cols;
   const arma::mat prior = arma::diagmat(prior_prec*arma::ones<arma::vec>(L)); 
   //up Z
-  cov_w = inv(NS*obs_prec*ZZ + prior);
+  cov_w = inv(obs_prec*ZZ + prior);
   up_eta_w_woi(num_w, y, rowi, coli, Z);
-  W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w/NS;
+  W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w;
   //up W
-  WW = W.t() * W + cov_w;
-  cov_z = inv(NS*obs_prec*WW + prior);
+  WW = (W.rows(uid_c).t() * W.rows(uid_c) + cov_w);
+  cov_z = inv(obs_prec*WW + prior);
   up_eta_z_woi(num_z, y, rowi, coli, W);
   Z.rows(uid_r) =  obs_prec*num_z.rows(uid_r)*cov_z;
-  ZZ = Z.t() * Z + cov_z;
-  R = (arma::trace(WW*ZZ)*NS + residuals(y, y2, rowi, coli, Z, W));
+  ZZ = (Z.rows(uid_r).t() * Z.rows(uid_r) + cov_z);
+  R = (arma::trace(WW*ZZ) + residuals(y, y2, rowi, coli, Z, W));
 }
 
 double doVB_norm_woi_s_sub(const arma::vec & y,
-                       const arma::uvec & rowi,
-                       const arma::uvec & coli,
-                       const arma::uvec & uid_r,
-                       const arma::uvec & uid_c,
-                       const int & Nr,
-                       const int & Nc,
-                       const int & L,
-                       const int & iter,
-                       const double & prior_prec,
-                       const double & a,
-                       const double & b,
-                       const double & N1, 
-                       arma::mat & Z,
-                       arma::mat & W,
-                       arma::mat & ZZ,
-                       arma::mat & WW,
-                       arma::mat & cov_z, 
-                       arma::mat & cov_w,
-                       double & obs_prec,
-                       double & ahat,
-                       double & bhat){
+                           const arma::uvec & rowi,
+                           const arma::uvec & coli,
+                           const arma::uvec & uid_r,
+                           const arma::uvec & uid_c,
+                           const int & Nr,
+                           const int & Nc,
+                           const int & L,
+                           const int & iter,
+                           const double & prior_prec,
+                           const double & a,
+                           const double & b,
+                           const double & N1, 
+                           arma::mat & Z,
+                           arma::mat & W,
+                           arma::mat & ZZ,
+                           arma::mat & WW,
+                           arma::mat & cov_z, 
+                           arma::mat & cov_w,
+                           double & obs_prec,
+                           double & ahat,
+                           double & bhat){
   arma::vec logprob = arma::zeros<arma::vec>(iter);
   double N = Nr*Nc; //int to double
   double R = 0;
@@ -190,18 +190,18 @@ double doVB_norm_woi_s_sub(const arma::vec & y,
 
 // [[Rcpp::export]]
 List doVB_norm_wo_s_mtx(const std::string & file_path,
-                     const int & Nr,
-                     const int & Nc,
-                     const double & N1,
-                     const int & L,
-                     const int & ns,
-                     const int & iter,
-                     const int & subiter,
-                     const double & prior_prec,
-                     const double & a,
-                     const double & b,
-                     const double & delay,
-                     const double & forgetting){
+                        const int & Nr,
+                        const int & Nc,
+                        const double & N1,
+                        const int & L,
+                        const int & ns,
+                        const int & iter,
+                        const int & subiter,
+                        const double & prior_prec,
+                        const double & a,
+                        const double & b,
+                        const double & delay,
+                        const double & forgetting){
   arma::mat Z = arma::randn<arma::mat>(Nr, L);
   arma::mat W = arma::randn<arma::mat>(Nc, L);
   arma::mat cov_z = arma::diagmat(prior_prec*arma::ones<arma::vec>(L));
@@ -255,3 +255,78 @@ List doVB_norm_wo_s_mtx(const std::string & file_path,
                       Named("prec_rate") = bhat,
                       Named("logprob") = lp);
 }
+
+
+///
+//diagonal covariance
+///
+
+void up_theta_woi_diag(arma::mat & Z,
+                       arma::mat & W,
+                       arma::rowvec & invcov_z,
+                       arma::rowvec & invcov_w,
+                       double & R,
+                       const arma::vec & y,
+                       const arma::vec & y2,
+                       const arma::uvec & rowi,
+                       const arma::uvec & coli,
+                       const double & obs_prec,
+                       const double & prior_prec,
+                       const double & N){
+  arma::mat num_z(Z.n_rows, Z.n_cols);
+  arma::mat num_w(W.n_rows, W.n_cols);
+  int L = W.n_cols;
+  R = 0;
+  up_eta_w_woi(num_w, y, rowi, coli, Z);
+  invcov_w = sum(pow(Z, 2), 0);
+  R += sum(invcov_w);
+  invcov_w += prior_prec;
+  W = num_w;
+  W.each_row() /= invcov_w;
+  up_eta_z_woi(num_z, y, rowi, coli, W);
+  invcov_z = sum(pow(W, 2), 0);
+  R += sum(invcov_z);
+  invcov_z += prior_prec;
+  Z = num_z;
+  Z.each_row() /= invcov_z;  
+  R += residuals(y, y2, rowi, coli, Z, W);
+}
+
+// [[Rcpp::export]]
+List doVB_norm_woi_diag(const arma::vec & y,
+                   const arma::uvec & rowi,
+                   const arma::uvec & coli,
+                   const int & Nr,
+                   const int & Nc,
+                   const int & L,
+                   const int & iter,
+                   const double & prior_prec,
+                   const double & a,
+                   const double & b){
+  arma::mat Z = arma::randn<arma::mat>(Nr, L);
+  arma::mat W = arma::randn<arma::mat>(Nc, L);
+  arma::rowvec invcov_z = arma::ones<arma::rowvec>(L);
+  arma::rowvec invcov_w = arma::ones<arma::rowvec>(L);
+  arma::vec logprob = arma::zeros<arma::vec>(iter);
+  double N = Nr*Nc; //int to double
+  double ahat = 0.5*N+a;
+  double bhat = b;
+  double obs_prec = a/b;
+  double R = 0;
+  const arma::vec y2 = pow(y,2);
+  for (int i=0; i<iter; i++) {
+    up_theta_woi_diag(Z, W, invcov_z, invcov_w, R, y, y2, rowi, coli, obs_prec, prior_prec, N);
+    //up_lambda(obs_prec, bhat, ahat, R, b);
+    logprob(i) = calc_elbo(R, obs_prec, ahat, bhat, a, b);
+  }
+  return List::create(Named("mean_row") = Z,
+                      Named("mean_col") = W,
+                      Named("invcov_row") = invcov_z,
+                      Named("invcov_col") = invcov_w,
+                      Named("obs_prec") = obs_prec,
+                      Named("prec_shape") = ahat,
+                      Named("prec_rate") = bhat,
+                      Named("logprob") = logprob);
+}
+
+

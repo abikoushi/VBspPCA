@@ -19,6 +19,16 @@ VBPCA <- function(Y, rank, iter=10, prior_prec=1, a = 1, b = 1,
   return(out)
 }
 
+# VBPCA <- function(Y, rank, iter=10, prior_prec=1, a = 1, b = 1,
+#                   use_rowintercept = TRUE){
+# out = VBspPCA:::doVB_norm_woi_diag(y = Y@x, rowi = Y@i, coli = Y@j, 
+#                                    Nr = Y@Dim[1], Nc = Y@Dim[2], 
+#                                    L = rank,
+#                                    iter = iter,
+#                                    prior_prec = prior_prec, a=a, b=b)
+# }
+
+
 SVBPCA <- function(file_path, rank,
                    subiter = 1,
                    n_epochs = 100,
@@ -61,3 +71,5 @@ fit_pca <- function(out){
   }
   return(res)
 }
+
+

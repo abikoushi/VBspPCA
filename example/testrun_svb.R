@@ -1,20 +1,22 @@
 library(Matrix)
 library(VBspPCA)
 miris <- t(as.matrix(iris[,-5]))
+dim(miris)
 #writeMM(miris, "test.mtx")
 size = VBspPCA:::size_mtx("test.mtx")
 system.time({
   out_s = VBspPCA:::SVBPCA(file_path="test.mtx",
                            rank = 2, subiter = 1,
-                           n_epochs = 500,
-                           b_size = 50,
+                           n_epochs = 1000,
+                           b_size = 20,
                            delay=1, forgetting=0.8,
+                           prior_shape = 1, prior_rate = 1,
                            use_rowintercept = FALSE)
 })
 #forgetting: (0.5, 1]
 #delay: >0
 out_s$mean_row
-sqrt(1/out_s$obs_prec)
+out_s$obs_prec
 plot(out_s$logprob, type="l")
 ca5 <- rgb(0,0,0,0.5)
 dim(miris)
