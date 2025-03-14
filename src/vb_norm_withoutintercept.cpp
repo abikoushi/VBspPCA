@@ -142,11 +142,11 @@ void up_theta_woi_s(arma::mat & Z,
   up_eta_w_woi(num_w, y, rowi, coli, Z);
   W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w;
   //up W
-  WW = (W.rows(uid_c).t() * W.rows(uid_c) + cov_w);
+  WW = (W.rows(uid_c).t() * W.rows(uid_c) + NS*cov_w);
   cov_z = inv(obs_prec*WW + prior);
   up_eta_z_woi(num_z, y, rowi, coli, W);
   Z.rows(uid_r) =  obs_prec*num_z.rows(uid_r)*cov_z;
-  ZZ = (Z.rows(uid_r).t() * Z.rows(uid_r) + cov_z);
+  ZZ = (Z.rows(uid_r).t() * Z.rows(uid_r) + NS*cov_z);
   R = (arma::trace(WW*ZZ) + residuals(y, y2, rowi, coli, Z, W));
 }
 
