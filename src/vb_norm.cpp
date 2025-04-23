@@ -234,8 +234,8 @@ List doVB_norm_s_mtx(const std::string & file_path,
                        const double & prior_prec,
                        const double & a,
                        const double & b,
-                       const double & delay,
-                       const double & forgetting){
+                       const arma::vec & lr_param,
+                       const std::string & lr_type){
   arma::mat Z = arma::randn<arma::mat>(Nr, L);
   arma::mat W = arma::randn<arma::mat>(Nc, L);
   arma::vec B = arma::randn<arma::vec>(Nr);
@@ -247,6 +247,8 @@ List doVB_norm_s_mtx(const std::string & file_path,
   double N = Nr*Nc; //int to double
   double ahat = 0.5*N+a;
   double bhat = b;
+  std::unique_ptr<lr> g;
+  set_lr_method(g, lr_type);
   for(int epoc=0; epoc<iter; epoc++){
     arma::uvec row_i(ns);
     arma::uvec col_i(ns);
@@ -274,7 +276,7 @@ List doVB_norm_s_mtx(const std::string & file_path,
          Nr, Nc, L, subiter, 
          prior_prec, a, b, N1,
          Zs, Ws, Bs, cov_zs, cov_ws, cov_Bs, obs_prec, bhat_s);
-      double rho = lr_default(epoc, delay, forgetting);
+      double rho = g -> lr_t(epoc, lr_param);
       double rho2 = 1-rho;
       Z.rows(uid_r) = rho2*Z.rows(uid_r) + rho*Zs.rows(uid_r);
       W.rows(uid_c) = rho2*W.rows(uid_c) + rho*Ws.rows(uid_c);

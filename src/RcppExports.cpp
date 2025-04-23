@@ -11,6 +11,19 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// check_lr
+double check_lr(const int& epoc, const arma::vec& lr_param, const std::string& lr_type);
+RcppExport SEXP _VBspPCA_check_lr(SEXP epocSEXP, SEXP lr_paramSEXP, SEXP lr_typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int& >::type epoc(epocSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lr_param(lr_paramSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type lr_type(lr_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_lr(epoc, lr_param, lr_type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // read_mtx
 List read_mtx(const std::string& readtxt, const arma::uvec& bag);
 RcppExport SEXP _VBspPCA_read_mtx(SEXP readtxtSEXP, SEXP bagSEXP) {
@@ -57,8 +70,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // doVB_norm_s_mtx
-List doVB_norm_s_mtx(const std::string& file_path, const int& Nr, const int& Nc, const double& N1, const int& L, const int& ns, const int& iter, const int& subiter, const double& prior_prec, const double& a, const double& b, const double& delay, const double& forgetting);
-RcppExport SEXP _VBspPCA_doVB_norm_s_mtx(SEXP file_pathSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP N1SEXP, SEXP LSEXP, SEXP nsSEXP, SEXP iterSEXP, SEXP subiterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP, SEXP delaySEXP, SEXP forgettingSEXP) {
+List doVB_norm_s_mtx(const std::string& file_path, const int& Nr, const int& Nc, const double& N1, const int& L, const int& ns, const int& iter, const int& subiter, const double& prior_prec, const double& a, const double& b, const arma::vec& lr_param, const std::string& lr_type);
+RcppExport SEXP _VBspPCA_doVB_norm_s_mtx(SEXP file_pathSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP N1SEXP, SEXP LSEXP, SEXP nsSEXP, SEXP iterSEXP, SEXP subiterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP, SEXP lr_paramSEXP, SEXP lr_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -73,9 +86,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type prior_prec(prior_precSEXP);
     Rcpp::traits::input_parameter< const double& >::type a(aSEXP);
     Rcpp::traits::input_parameter< const double& >::type b(bSEXP);
-    Rcpp::traits::input_parameter< const double& >::type delay(delaySEXP);
-    Rcpp::traits::input_parameter< const double& >::type forgetting(forgettingSEXP);
-    rcpp_result_gen = Rcpp::wrap(doVB_norm_s_mtx(file_path, Nr, Nc, N1, L, ns, iter, subiter, prior_prec, a, b, delay, forgetting));
+    Rcpp::traits::input_parameter< const arma::vec& >::type lr_param(lr_paramSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type lr_type(lr_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(doVB_norm_s_mtx(file_path, Nr, Nc, N1, L, ns, iter, subiter, prior_prec, a, b, lr_param, lr_type));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -100,8 +113,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // doVB_norm_wo_s_mtx
-List doVB_norm_wo_s_mtx(const std::string& file_path, const int& Nr, const int& Nc, const double& N1, const int& L, const int& ns, const int& iter, const double& prior_prec, const double& a, const double& b, const double& delay, const double& forgetting);
-RcppExport SEXP _VBspPCA_doVB_norm_wo_s_mtx(SEXP file_pathSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP N1SEXP, SEXP LSEXP, SEXP nsSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP, SEXP delaySEXP, SEXP forgettingSEXP) {
+List doVB_norm_wo_s_mtx(const std::string& file_path, const int& Nr, const int& Nc, const double& N1, const int& L, const int& ns, const int& iter, const double& prior_prec, const double& a, const double& b, const arma::vec& lr_param, const std::string& lr_type);
+RcppExport SEXP _VBspPCA_doVB_norm_wo_s_mtx(SEXP file_pathSEXP, SEXP NrSEXP, SEXP NcSEXP, SEXP N1SEXP, SEXP LSEXP, SEXP nsSEXP, SEXP iterSEXP, SEXP prior_precSEXP, SEXP aSEXP, SEXP bSEXP, SEXP lr_paramSEXP, SEXP lr_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -115,14 +128,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type prior_prec(prior_precSEXP);
     Rcpp::traits::input_parameter< const double& >::type a(aSEXP);
     Rcpp::traits::input_parameter< const double& >::type b(bSEXP);
-    Rcpp::traits::input_parameter< const double& >::type delay(delaySEXP);
-    Rcpp::traits::input_parameter< const double& >::type forgetting(forgettingSEXP);
-    rcpp_result_gen = Rcpp::wrap(doVB_norm_wo_s_mtx(file_path, Nr, Nc, N1, L, ns, iter, prior_prec, a, b, delay, forgetting));
+    Rcpp::traits::input_parameter< const arma::vec& >::type lr_param(lr_paramSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type lr_type(lr_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(doVB_norm_wo_s_mtx(file_path, Nr, Nc, N1, L, ns, iter, prior_prec, a, b, lr_param, lr_type));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_VBspPCA_check_lr", (DL_FUNC) &_VBspPCA_check_lr, 3},
     {"_VBspPCA_read_mtx", (DL_FUNC) &_VBspPCA_read_mtx, 2},
     {"_VBspPCA_ra1_norm", (DL_FUNC) &_VBspPCA_ra1_norm, 3},
     {"_VBspPCA_doVB_norm", (DL_FUNC) &_VBspPCA_doVB_norm, 10},

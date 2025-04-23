@@ -4,12 +4,13 @@ miris <- t(as.matrix(iris[,-5]))
 dim(miris)
 #writeMM(miris, "test.mtx")
 size = VBspPCA:::size_mtx("test.mtx")
+size
 system.time({
   out_s = VBspPCA:::SVBPCA(file_path="test.mtx",
                            rank = 2, 
                            n_epochs = 100,
-                           b_size = 100,
-                           delay=15, forgetting=1,
+                           b_size = 300,
+                           lr_param = c(15,1),
                            prior_shape = 1, prior_rate = 1,
                            use_rowintercept = FALSE)
 })

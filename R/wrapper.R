@@ -35,8 +35,8 @@ SVBPCA <- function(file_path, rank,
                    b_size = 10000,
                    prior_prec = 1,
                    prior_shape = 1, prior_rate = 1,
-                   delay=1,
-                   forgetting=0.8,
+                   lr_type="exponential",
+                   lr_param = c(15,0.8),
                    use_rowintercept = TRUE){
   size = size_mtx(file_path)
   if(use_rowintercept){
@@ -48,7 +48,8 @@ SVBPCA <- function(file_path, rank,
                   subiter = subiter,
                   prior_prec = prior_prec,
                   a=prior_shape, b=prior_rate,
-                  delay=delay,forgetting=forgetting)
+                  lr_param=lr_param,
+                  lr_type=lr_type)
   }else{
     out = doVB_norm_wo_s_mtx(file_path,
                     size[1], size[2], size[3],
@@ -57,7 +58,8 @@ SVBPCA <- function(file_path, rank,
                     iter = n_epochs,
                     prior_prec = prior_prec,
                     a = prior_shape, b = prior_rate,
-                    delay = delay, forgetting = forgetting)
+                    lr_param=lr_param,
+                    lr_type=lr_type)
   }
   return(out)
 }
