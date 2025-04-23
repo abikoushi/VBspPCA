@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^example$
 ^README.md
+^.*\.mtx$

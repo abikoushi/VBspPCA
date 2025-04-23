@@ -55,10 +55,9 @@ SVBPCA <- function(file_path, rank,
                     L = rank,
                     ns = b_size,
                     iter = n_epochs,
-                    subiter = subiter,
                     prior_prec = prior_prec,
-                    a=prior_shape, b=prior_rate,
-                    delay=delay,forgetting=forgetting)
+                    a = prior_shape, b = prior_rate,
+                    delay = delay, forgetting = forgetting)
   }
   return(out)
 }
