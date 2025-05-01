@@ -25,9 +25,10 @@ void up_eta_2D(arma::field<arma::mat> & eta,
                const arma::umat X,
                const arma::uvec dims,
                const double & tau, const double & lambda,
-               const int & k, const int & l){
+               const int & k, const int & l,
+               const double & NS){
   int n = dims(k);
   arma::vec num = arma::zeros<arma::vec>(n);
   num.rows(X.col(k)) += xvlnk % resid;
-  eta(k).col(l) = num;
+  eta(k).col(l) = NS*num;
 }

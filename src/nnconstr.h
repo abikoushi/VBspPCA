@@ -11,7 +11,10 @@ void up_eta_2D(arma::field<arma::mat> & eta,
                const arma::umat X,
                const arma::uvec dims,
                const double & tau, const double & lambda,
-               const int & k, const int & l);
+               const int & k, const int & l,
+               const double & NS);
+
+
 
 class nnconstr {
 public:
@@ -26,7 +29,8 @@ public:
                                    const double & tau, 
                                    const double & lambda,
                                    const arma::uvec dims,
-                                   const int & l) = 0;
+                                   const int & l,
+                                   const double & NS) = 0;
   virtual ~nnconstr(){}
 };
 
@@ -43,7 +47,8 @@ class NN : public nnconstr{
                            const double & tau, 
                            const double & lambda,
                            const arma::uvec dims,
-                           const int & l){
+                           const int & l, 
+                           const double & NS){
     int not_k = 1;
     double klv = 0.0;
     for(int k = 0; k < 2; k++){
@@ -51,7 +56,7 @@ class NN : public nnconstr{
       xvl /= vkl.rows(X.col(k));
       vkl = V2(k).col(l);
       xvl2 /= vkl.rows(X.col(k));
-      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l);
+      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l, NS);
       H(k,l) = sum(V2(not_k).col(l));
       int n = dims(k);
       arma::vec num = eta(k).col(l);
@@ -74,7 +79,7 @@ class NN : public nnconstr{
   }
 };
 
-//Arrow negative
+//arrow negative
 class AN : public nnconstr{
   double up_V_from_etaH_2D(arma::field<arma::mat> & eta,
                            arma::mat & H,
@@ -87,7 +92,8 @@ class AN : public nnconstr{
                            const double & tau, 
                            const double & lambda,
                            const arma::uvec dims,
-                           const int & l){
+                           const int & l, 
+                           const double & NS){
     int not_k = 1;
     double klv = 0.0;
     for(int k = 0; k < 2; k++){
@@ -95,7 +101,7 @@ class AN : public nnconstr{
       xvl /= vkl.rows(X.col(k));
       vkl = V2(k).col(l);
       xvl2 /= vkl.rows(X.col(k));
-      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l);
+      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l, NS);
       H(k,l) = sum(V2(not_k).col(l));
       int n = dims(k);
       arma::vec num = eta(k).col(l);
@@ -131,7 +137,8 @@ class SN : public nnconstr{
                            const double & tau, 
                            const double & lambda,
                            const arma::uvec dims,
-                           const int & l){
+                           const int & l,
+                           const double & NS){
     int not_k = 1;
     double klv = 0.0;
     for(int k = 0; k < 1; k++){
@@ -139,7 +146,7 @@ class SN : public nnconstr{
       xvl /= vkl.rows(X.col(k));
       vkl = V2(k).col(l);
       xvl2 /= vkl.rows(X.col(k));
-      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l);
+      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l, NS);
       H(k,l) = sum(V2(not_k).col(l));
       int n = dims(k);
       arma::vec num = eta(k).col(l);
@@ -163,7 +170,7 @@ class SN : public nnconstr{
       xvl /= vkl.rows(X.col(k));
       vkl = V2(k).col(l);
       xvl2 /= vkl.rows(X.col(k));
-      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l);
+      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l, NS);
       H(k,l) = sum(V2(not_k).col(l));
       int n = dims(k);
       arma::vec num = eta(k).col(l);
