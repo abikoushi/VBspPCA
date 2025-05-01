@@ -103,12 +103,27 @@ double ra1_norm(const double & a, const double & mean, const double & sd) {
 }
 
 //truncated x>0
-double moment1(const double & mu, const double & sigma){
+double truncmoment1(const double & mu, const double & sigma){
   return mu + sigma*exp(R::dnorm(-mu/sigma, 0, 1, 1)-R::pnorm(-mu/sigma, 0, 1, 0, 1));
 }
 
-double moment2(const double & mu, const double & sigma) {
+double truncmoment2(const double & mu, const double & sigma) {
   return pow(mu,2) + pow(sigma,2)+mu*sigma*exp(R::dnorm(-mu/sigma, 0, 1, 1)-R::pnorm(-mu/sigma,0, 1, 0, 1));
+}
+
+double inverfcx(double x){
+  return exp(-pow(x,2))/erfc(x);
+}
+
+double logerfc(double x){
+  return log(2) + R::pnorm(x * sqrt(2), 0, 1, 0, 1);
+} 
+
+double KLtruncnorm(double mq, double bq, double tau){
+  double out = 0.5*((tau/bq-1) -log(tau) + log(bq) + tau*pow(mq,2))+
+    ((tau+bq)*mq/sqrt(2*M_PI*bq))*inverfcx(-mq*sqrt(bq/2))-
+    logerfc(-mq*bq/2);
+  return isnan(out)?0:out;
 }
 
 /*

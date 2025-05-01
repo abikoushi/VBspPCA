@@ -9,6 +9,8 @@ double ers_a_inf(const double & a);
 
 double ra1_norm(const double & a, const double & mean, const double & sd);
 
-double moment1(const double & mu, const double & sigma);
+double truncmoment1(const double & mu, const double & sigma);
 
-double moment2(const double & mu, const double & sigma);
+double truncmoment2(const double & mu, const double & sigma);
+
+double KLtruncnorm(double mq, double bq, double tau);

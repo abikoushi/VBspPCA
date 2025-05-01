@@ -19,14 +19,7 @@ VBPCA <- function(Y, rank, iter=10, prior_prec=1, a = 1, b = 1,
   return(out)
 }
 
-# VBPCA <- function(Y, rank, iter=10, prior_prec=1, a = 1, b = 1,
-#                   use_rowintercept = TRUE){
-# out = VBspPCA:::doVB_norm_woi_diag(y = Y@x, rowi = Y@i, coli = Y@j, 
-#                                    Nr = Y@Dim[1], Nc = Y@Dim[2], 
-#                                    L = rank,
-#                                    iter = iter,
-#                                    prior_prec = prior_prec, a=a, b=b)
-# }
+
 
 
 SVBPCA <- function(file_path, rank,
@@ -73,4 +66,20 @@ fit_pca <- function(out){
   return(res)
 }
 
+initnorm <- function(D, rank){
+  matrix(abs(rnorm(D*rank)), D, rank)
+}
 
+VBPCA_diag <- function(Y, rank, iter, constr_type = "AN", 
+                       tau=1, a=1, b=1, display_progress=TRUE){
+  dims = dim(Y)
+  V = lapply(dims, initnorm, rank=rank)
+  lambda = 1
+  res = VBspPCA:::doVB_norm_woi_diag(V, lambda = lambda, 
+                                     y=Y@x, X=cbind(Y@i, Y@j), dims = dims,
+                                     L = rank,
+                                     constr_type = constr_type,
+                                     iter=iter, tau=tau, a=a, b=b,
+                                     display_progress = display_progress)
+  return(res)
+}

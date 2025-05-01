@@ -4,43 +4,10 @@
 #include "readline.h"
 #include "lr.h"
 #include "ELBO.h"
+#include "up_eta.h"
 #include "lambda.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
-
-void up_eta_w_woi(arma::mat & num_w,
-              const arma::vec & y,
-              const arma::uvec & rowi,
-              const arma::uvec & coli,
-              const arma::mat & Z) {
-  num_w.fill(0.0);
-  for(arma::uword n = 0; n < y.n_rows; n++){
-    num_w.row(coli(n)) += Z.row(rowi(n)) * y(n);
-  }
-}
-
-void up_eta_z_woi(arma::mat & num_z,
-              const arma::vec & y,
-              const arma::uvec & rowi,
-              const arma::uvec & coli,
-              const arma::mat & W) {
-  num_z.fill(0.0);
-  for(arma::uword n = 0; n < y.n_rows; n++){
-    num_z.row(rowi(n)) += W.row(coli(n)) * y(n);
-  }
-}
-
-double residuals(const arma::vec y, const arma::vec y2, 
-                 const arma::uvec & rowi, const arma::uvec & coli,
-                 const arma::mat Z, const arma::mat W){
-  double R = 0.0;
-  for(arma::uword n = 0; n < y.n_rows; n++){
-    double mn = dot(Z.row(rowi(n)), W.row(coli(n))); 
-    R += -2.0*mn*y(n) + y2(n);
-  }
-  return R;
-}
-
 
 void up_theta_woi(arma::mat & Z,
               arma::mat & W,
@@ -149,13 +116,13 @@ void up_eta_woi(arma::mat & Z, arma::mat & W,
       num_w(coli(n), l) += Z(rowi(n), l) * U(n, l);
     }
   }
-  W.rows(uid_c) = NS*obs_prec*num_w.rows(uid_c)*cov_w;
-  Z.rows(uid_r) = NS*obs_prec*num_z.rows(uid_r)*cov_z;
   const arma::mat prior = arma::diagmat(prior_prec*arma::ones<arma::vec>(Z.n_cols));
   arma::mat WW = W.t() * W + cov_w;
   arma::mat ZZ = Z.t() * Z + cov_z;
   cov_z = inv(obs_prec*WW + prior);
   cov_w = inv(obs_prec*ZZ + prior);
+  W.rows(uid_c) = NS*obs_prec*num_w.rows(uid_c)*cov_w;
+  Z.rows(uid_r) = NS*obs_prec*num_z.rows(uid_r)*cov_z;
 }
 
 
@@ -225,7 +192,3 @@ List doVB_norm_wo_s_mtx(const std::string & file_path,
                       Named("logprob") = lp);
 }
 
-
-///
-//diagonal covariance
-///

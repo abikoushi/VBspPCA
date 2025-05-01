@@ -85,7 +85,7 @@ void up_theta(arma::mat & Z,
   up_eta_w(num_w, y, rowi, coli, Z, B);
   W = obs_prec*num_w*cov_w;
   WW = W.t() * W + cov_w;
-  cov_z = inv(obs_prec*WW* + prior);
+  cov_z = inv(obs_prec*WW + prior);
   up_eta_z(num_z, y, rowi, coli, W, B);
   Z = obs_prec*num_z*cov_z;
   ZZ = Z.t() * Z + cov_z;
@@ -165,20 +165,20 @@ void up_theta_s(arma::mat & Z,
   int L = W.n_cols;
   const arma::mat prior = arma::diagmat(prior_prec*arma::ones<arma::vec>(L)); 
   //up Z
-  arma::mat ZZ = Z.t() * Z + cov_z;
-  cov_w = inv(obs_prec*ZZ*NS + prior);
+  arma::mat ZZ = arma::trans(Z) * Z + cov_z;
+  cov_w = inv(obs_prec*ZZ + prior);
   up_eta_w(num_w, y, rowi, coli, Z, B);
-  W.rows(uid_c) = obs_prec*num_w.rows(uid_c)*cov_w;
+  W = NS*obs_prec*num_w*cov_w;
   //up W
-  arma::mat WW = W.t() * W + cov_w;
-  cov_z = inv(obs_prec*WW*NS + prior);
+  arma::mat WW = arma::trans(W) * W + cov_w;
+  cov_z = inv(obs_prec*WW + prior);
   up_eta_z(num_z, y, rowi, coli, W, B);
-  Z.rows(uid_r) = obs_prec*num_z.rows(uid_r)*cov_z;
+  Z = NS*obs_prec*num_z*cov_z;
   //up B
   up_eta_B(num_B, y, y2, rowi, coli, Z, W, B);
-  cov_B = 1.0/(NS*N*obs_prec+prior_prec);
-  B.rows(uid_r) = obs_prec*num_B.rows(uid_r)*cov_B;
-  R = NS*(arma::trace(WW*ZZ) + sum(B%B + cov_B)); 
+  cov_B = 1.0/(N*obs_prec+prior_prec);
+  B = NS*obs_prec*num_B*cov_B;
+  R = (arma::trace(WW*ZZ) + sum(B%B + cov_B)); 
   R += residuals(y, y2, rowi, coli, Z,  W, B);
 }
 
@@ -210,7 +210,7 @@ double doVB_norm_s_sub(const arma::vec & y,
   double R = 0;
   double S = y.n_rows;
   double NS = S/N1;
-  double ahat = 0.5*N*NS+a;
+  double ahat = 0.5*N/S+a;
   const arma::vec y2 = pow(y,2);
   double lp;
   for (int i=0; i<iter; i++) {
@@ -271,8 +271,7 @@ List doVB_norm_s_mtx(const std::string & file_path,
       double bhat_s = bhat;
       //rankindex(row_i, uid_r);
       //rankindex(col_i, uid_c);
-      lp(epoc) += doVB_norm_s_sub(val, row_i, col_i,
-         uid_r, uid_c,
+      lp(epoc) += doVB_norm_s_sub(val, row_i, col_i, uid_r, uid_c,
          Nr, Nc, L, subiter, 
          prior_prec, a, b, N1,
          Zs, Ws, Bs, cov_zs, cov_ws, cov_Bs, obs_prec, bhat_s);

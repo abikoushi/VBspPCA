@@ -7,4 +7,4 @@ Maintainer: Ko Abe <abe.csb@tmd.ac.jp>
 Description: Efficient implementation enjoying the sparsity of the Variational Bayes method for probablistic principal component analysis
 License: MIT + file LICENSE
 Imports: Rcpp (>= 1.0.13), Matrix (>= 1.7)
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo, RcppProgress

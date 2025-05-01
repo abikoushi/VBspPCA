@@ -29,3 +29,7 @@ doVB_norm_wo_s_mtx <- function(file_path, Nr, Nc, N1, L, ns, iter, prior_prec, a
     .Call(`_VBspPCA_doVB_norm_wo_s_mtx`, file_path, Nr, Nc, N1, L, ns, iter, prior_prec, a, b, lr_param, lr_type)
 }
 
+doVB_norm_woi_diag <- function(V, lambda, y, X, dims, L, constr_type, iter, tau, a, b, display_progress) {
+    .Call(`_VBspPCA_doVB_norm_woi_diag`, V, lambda, y, X, dims, L, constr_type, iter, tau, a, b, display_progress)
+}
+
