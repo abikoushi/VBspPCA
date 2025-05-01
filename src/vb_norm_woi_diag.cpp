@@ -18,7 +18,7 @@ double upsum(const arma::mat & f){
 }
 
 double lg(double a, double b, double c, double d){
-  return - c * d / a - b * log(a) - lgamma(b) + (b-1)*(R::digamma(d) + log(c));
+  return - c * d / a - b * log(a) - lgamma(b) + (b - 1.0)*(R::digamma(d) + log(c));
 }
 
 double KLgamma(double a, double b, double c, double d) {
@@ -46,27 +46,14 @@ double up_lambda_2d(double & lambda,
   return (-lambda*tmp) + 0.5*std::log(lambda) - KLgamma(a, b, ahat, bhat);
 }
 
-void up_eta_2D(arma::field<arma::mat> & eta,
-               const arma::vec & xvlnk,
-               const arma::vec & resid,
-               const arma::umat X,
-               const arma::uvec dims,
-               const double & tau, const double & lambda,
-               const int & k, const int & l){
-  int n = dims(k);
-  arma::vec num = arma::zeros<arma::vec>(n);
-  num.rows(X.col(k)) += xvlnk % resid;
-  eta(k).col(l) = num;
-}
-
-double up_f_from_etaH_2D(arma::field<arma::mat> & eta,
+double up_vpar_2D(arma::field<arma::mat> & eta,
                          arma::mat & H,
                          arma::field<arma::mat> & V,
                          arma::field<arma::mat> & V2,
                          arma::vec & f,
                          double & sumf2,
                          arma::mat & fm,
-                         std::unique_ptr<nnconstr> & g,
+                         std::unique_ptr<nnconstr> & constr,
                          const arma::vec & y, const int & N,
                          const arma::umat & X,
                          const arma::uvec dims,
@@ -83,21 +70,7 @@ double up_f_from_etaH_2D(arma::field<arma::mat> & eta,
     f -= xvl; // sum of other than l
     sumf2 -= sum(xvl2);
     arma::vec resid = y - f;
-    int not_k = 1;
-    for(int k = 0; k < 2; k++){
-      arma::vec vkl = V(k).col(l);
-      xvl /= vkl.rows(X.col(k));
-      vkl = V2(k).col(l);
-      xvl2 /= vkl.rows(X.col(k));
-      up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l);
-      H(k,l) = sum(V2(not_k).col(l));
-      klv += g -> up_V_from_etaH_2D(eta, H, tau, lambda, V, V2, dims, k, l);
-      vkl = V(k).col(l);
-      xvl %=  vkl.rows(X.col(k));
-      vkl = V2(k).col(l);
-      xvl2 %= vkl.rows(X.col(k));
-      not_k = 0;
-    }
+    klv += constr -> up_V_from_etaH_2D(eta, H, xvl, xvl2, resid, V, V2, X, tau, lambda,dims, l);
     f += xvl; // sum of the all
     sumf2 += sum(xvl2);
     fm.col(l) = xvl;
@@ -120,7 +93,7 @@ Rcpp::List doVB_norm_woi_diag(arma::field<arma::mat> V,
   int N = y.n_rows;
   int K = 2;
   arma::vec loglik = arma::zeros<arma::vec>(iter);
-  double ahat = N/2+a;
+  double ahat = 0.5 * N + a;
   arma::field<arma::mat> V2(2);
   for(int k = 0; k < K; k++){
     arma::mat Vk = V(k);
@@ -128,7 +101,7 @@ Rcpp::List doVB_norm_woi_diag(arma::field<arma::mat> V,
   }
   arma::mat fm = V(0).rows(X.col(0)) % V(1).rows(X.col(1));
   arma::vec f = sum(fm, 1);
-  double sumf2 = arma::accu(V2(0).rows(X.col(0)) % V2(1).rows(X.col(1)));
+  double sumf2 = arma::accu( V2(0).rows(X.col(0)) % V2(1).rows(X.col(1)) );
   arma::vec Z = y;
   arma::field<arma::mat> eta = V;
   arma::mat H(K,L);
@@ -136,13 +109,13 @@ Rcpp::List doVB_norm_woi_diag(arma::field<arma::mat> V,
   for(int k = 0; k < K; k++){
     eta(k).fill(0.0);
   }
-  std::unique_ptr<nnconstr> A;
-  set_constr(A, constr_type);
+  std::unique_ptr<nnconstr> constr;
+  set_constr(constr, constr_type);
   Progress pb(iter, display_progress);
   for(int i = 0; i < iter; i++){
-    double klv = up_f_from_etaH_2D(eta, H, V, V2,
-                                   f, sumf2, fm, A, y, N, X, dims,
-                                   L, lambda, tau);
+    double klv = up_vpar_2D(eta, H, V, V2,
+                            f, sumf2, fm, constr, y, N, X, dims,
+                            L, lambda, tau);
     loglik.row(i) = up_lambda_2d(lambda, ahat, a, b, Z, f, sumf2, fm);
     pb.increment();
   }
