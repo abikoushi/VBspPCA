@@ -75,7 +75,7 @@ VBPCA_diag <- function(Y, rank, iter, constr_type = "AN",
   dims = dim(Y)
   V = lapply(dims, initnorm, rank=rank)
   lambda = 1
-  res = VBspPCA:::doVB_norm_woi_diag(V, lambda = lambda, 
+  res = doVB_norm_woi_diag(V, lambda = lambda, 
                                      y=Y@x, X = cbind(Y@i, Y@j),
                                      dims = dims,
                                      L = rank,

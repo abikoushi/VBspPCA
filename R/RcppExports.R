@@ -33,3 +33,7 @@ doVB_norm_woi_diag <- function(V, lambda, y, X, dims, L, constr_type, iter, tau,
     .Call(`_VBspPCA_doVB_norm_woi_diag`, V, lambda, y, X, dims, L, constr_type, iter, tau, a, b, display_progress)
 }
 
+doSVB_norm_woi_diag <- function(V, lambda, y, X, dims, L, constr_type, lr_type, lr_param, bsize, iter, tau, a, b, display_progress) {
+    .Call(`_VBspPCA_doSVB_norm_woi_diag`, V, lambda, y, X, dims, L, constr_type, lr_type, lr_param, bsize, iter, tau, a, b, display_progress)
+}
+
