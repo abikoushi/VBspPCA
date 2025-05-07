@@ -10,13 +10,15 @@ SVBPCA_diag <- function(Y, rank, iter, bsize,
                         lr_type = "exponential",
                         lr_param = c(1,0.9),
                         constr_type = "AN", 
-                        tau=1, a=1, b=1, display_progress=TRUE){
+                        tau=1, a=1, b=1,
+                        lambda = 1,
+                        display_progress=TRUE){
   if(any(class(Y)=="dgTMatrix")){
     Y <- as(Y, "TsparseMatrix")    
   }
   dims = dim(Y)
   V = lapply(dims, VBspPCA:::initnorm, rank=rank)
-  lambda = 1
+
   res = VBspPCA:::doSVB_norm_woi_diag(V, lambda = lambda, 
                                      y=Y@x, X = cbind(Y@i, Y@j),
                                      dims = dims,
@@ -35,15 +37,17 @@ system.time({
   out_nn <- SVBPCA_diag(miris,  bsize = 100,
                         constr_type = "NN", 
                         lr_param = c(20,0.9),
-                        rank = 2, iter = 10,
+                        rank = 2, iter = 200,
+                        lambda=100,
                         tau = 1, a = 1, b = 1)
 })
-1/sqrt(out_nn$obs_prec)
+(out_nn$obs_prec)
 
 plot(out_nn$mean_col, col=col3[iris$Species], pch=16)
 plot(fit_pca(out_nn), as.matrix(miris))
+abline(0,1,lty=3)
 out_nn$mean_row
-out_nn$obs_prec
+1/sqrt(out_nn$obs_prec)
 plot(out_nn$logprob, type = "l")
 
 #####
@@ -65,6 +69,8 @@ system.time({
                     rank = 2, iter = 100,
                     tau = 1, a = 1, b = 1)
 })
+
+out_an$obs_prec
 
 matplot(cbind(out_an$logprob[-1], 
       out_sn$logprob[-1],

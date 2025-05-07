@@ -134,7 +134,6 @@ class AN : public nnconstr{
       H(k,l) = sum(V2(not_k).col(l));
       int n = dims(k);
       arma::vec num = eta(k).col(l);
-      double den = H(k,l);
       arma::vec mu = num/(H(k,l) + tau/lambda);
       double B = lambda*H(k,l) + tau;
       double sigma2 = 1.0 / B;
@@ -165,7 +164,6 @@ class AN : public nnconstr{
     for(int k = 0; k < 2; k++){
       int n = dims(k);
       arma::vec num = eta(k).col(l);
-      double den = H(k,l);
       arma::vec mu = num/(H(k,l) + tau/lambda);
       double B = lambda*H(k,l) + tau;
       double sigma2 = 1.0 / B;

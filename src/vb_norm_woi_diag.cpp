@@ -70,10 +70,11 @@ double up_vpar_2D(arma::field<arma::mat> & eta,
     vl2 = V2(1).col(l);
     arma::vec xvl2 = vl1.rows(X.col(0)) % vl2.rows(X.col(1));
     f -= xvl; // sum of other than l
+    //double sumxvl2 = sum(xvl2);
     sumf2 -= sum(xvl2);
     arma::vec resid = y - f;
     klv += constr -> up_V_eta_H_2D(eta, H, xvl, xvl2, resid, V, V2,
-                                       X, tau, lambda, dims, l);
+                                   X, tau, lambda, dims, l);
     f += xvl; // sum of the all
     sumf2 += sum(xvl2);
     fm.col(l) = xvl;
@@ -147,8 +148,8 @@ double up_etaH_2D_s(arma::field<arma::mat> & eta,
                   const arma::uvec dims,
                   const int & l, 
                   const double & NS){
-  int not_k = 1;
   double klv = 0.0;
+  int not_k = 1;
   for(int k = 0; k < 2; k++){
     arma::vec vkl = V(k).col(l);
     xvl /= vkl.rows(X.col(k));
@@ -201,13 +202,14 @@ double up_vpar_2D_s(arma::field<arma::mat> & eta,
 double up_bhat_s(double & bhat,
                const double & ahat, 
                const double & a, const double & b,
-               const arma::vec & Z,
+               const arma::vec & y,
                const arma::vec & f,
                const double & sumf2,
-               const arma::mat & fm, const double NS){
+               const arma::mat & fm,
+               const double NS){
   double tmp = 0.0;
-  tmp += sum(Z%Z)*0.5;
-  tmp -= sum(Z%f);
+  tmp += sum(y%y)*0.5;
+  tmp -= sum(y%f);
   tmp += sumf2*0.5;
   tmp += upsum(fm);
   bhat = NS*tmp + b;
@@ -263,7 +265,7 @@ Rcpp::List doSVB_norm_woi_diag(arma::field<arma::mat> V,
       arma::uvec bag = sort(bags.col(step));
       arma::vec val(bsize);
       arma::vec Sy = y.rows(bag);
-      arma::umat SX(bag.n_rows, 2);
+      arma::umat SX(bag.n_rows, K);
       SX = X.rows(bag);
       arma::vec fs = f.rows(bag);
       arma::mat fms = fm.rows(bag);
@@ -271,9 +273,8 @@ Rcpp::List doSVB_norm_woi_diag(arma::field<arma::mat> V,
       arma::mat H_s = H;
       double bhat_s = bhat;
       loglik.row(epoc) += up_vpar_2D_s(eta_s, H_s, V, V2,
-                                fs, sumf2, fms, Sy, SX, dims,
-                                L, lambda, tau, NS);
-      loglik.row(epoc) += up_bhat_s(bhat_s, ahat, a, b, Sy, fs, sumf2, fms, NS);
+                 fs, sumf2, fms, Sy, SX, dims,
+                 L, lambda, tau, NS);
       for(int k = 0; k < K; k++){
         eta(k) = rho2*eta(k) + rho*eta_s(k);
       }
@@ -284,6 +285,7 @@ Rcpp::List doSVB_norm_woi_diag(arma::field<arma::mat> V,
       fs = sum(fms, 1);
       f.rows(bag) = fs;
       fm.rows(bag) = fms;
+      loglik.row(epoc) += up_bhat_s(bhat_s, ahat, a, b, Sy, fs, sumf2, fms, NS);
       lambda = ahat/bhat;
     }
     pb.increment();
