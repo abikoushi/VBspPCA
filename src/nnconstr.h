@@ -29,6 +29,19 @@ public:
                                    const arma::uvec dims,
                                    const int & l) = 0;
   
+  // virtual double up_V_eta_H_2D_mtx(arma::field<arma::mat> & eta,
+  //                              arma::mat & H,
+  //                              arma::vec & xvl,
+  //                              arma::vec & xvl2,
+  //                              arma::vec & resid,
+  //                              arma::field<arma::mat> & V,
+  //                              arma::field<arma::mat> & V2,
+  //                              const std::string & readtxt,
+  //                              const double & tau, 
+  //                              const double & lambda,
+  //                              const arma::uvec dims,
+  //                              const int & l) = 0;
+  
   virtual void up_V_from_etaH_2D(arma::field<arma::mat> & V,
                                    arma::field<arma::mat> & V2,
                                    const arma::field<arma::mat> & eta,
@@ -83,6 +96,47 @@ class NN : public nnconstr{
     return klv;
   }
   
+  // double up_V_eta_H_2D_mtx(arma::field<arma::mat> & eta,
+  //                                  arma::mat & H,
+  //                                  arma::vec & xvl,
+  //                                  arma::vec & xvl2,
+  //                                  arma::vec & resid,
+  //                                  arma::field<arma::mat> & V,
+  //                                  arma::field<arma::mat> & V2,
+  //                                  const std::string & readtxt,
+  //                                  const double & tau, 
+  //                                  const double & lambda,
+  //                                  const arma::uvec dims,
+  //                                  const int & l){
+  //   int not_k = 1;
+  //   double klv = 0.0;
+  //   for(int k = 0; k < 2; k++){
+  //     arma::vec vkl = V(k).col(l);
+  //     xvl /= vkl.rows(X.col(k));
+  //     vkl = V2(k).col(l);
+  //     xvl2 /= vkl.rows(X.col(k));
+  //     up_eta_2D(eta, xvl, resid, X, dims, tau, lambda, k, l, 1.0);
+  //     H(k,l) = sum(V2(not_k).col(l));
+  //     int n = dims(k);
+  //     arma::vec num = eta(k).col(l);
+  //     double den = H(k,l);
+  //     arma::vec mu = num/(H(k,l) + tau/lambda);
+  //     double B = lambda*H(k,l) + tau;
+  //     double sigma = 1.0 / sqrt(B);
+  //     for(int i = 0; i < n; i++){
+  //       klv += KLtruncnorm(mu(i), B, tau);
+  //       V(k).col(l).row(i) = truncmoment1(mu(i), sigma);
+  //       V2(k).col(l).row(i) = truncmoment2(mu(i), sigma);
+  //     }
+  //     vkl = V(k).col(l);
+  //     xvl %=  vkl.rows(X.col(k));
+  //     vkl = V2(k).col(l);
+  //     xvl2 %= vkl.rows(X.col(k));
+  //     not_k = 0;
+  //   }
+  //   return klv;
+  // }
+  
   void up_V_from_etaH_2D(arma::field<arma::mat> & V,
                            arma::field<arma::mat> & V2,
                            const arma::field<arma::mat> & eta,
@@ -93,18 +147,18 @@ class NN : public nnconstr{
                            const int & L){
   double klv = 0;
   for(int l = 0; l < L; l++){
-  for(int k = 0; k < 2; k++){
-  int n = dims(k);
-  arma::vec num = eta(k).col(l);
-  arma::vec mu = num/(H(k,l) + tau/lambda);
-  double B = lambda*H(k,l) + tau;
-  double sigma = 1.0 / sqrt(B);
-  for(int i = 0; i < n; i++){
-    klv += KLtruncnorm(mu(i), B, tau);
-    V(k).col(l).row(i) = truncmoment1(mu(i), sigma);
-    V2(k).col(l).row(i) = truncmoment2(mu(i), sigma);
-  }
-  }
+    for(int k = 0; k < 2; k++){
+      int n = dims(k);
+      arma::vec num = eta(k).col(l);
+      arma::vec mu = num/(H(k,l) + tau/lambda);
+      double B = lambda*H(k,l) + tau;
+      double sigma = 1.0 / sqrt(B);
+      for(int i = 0; i < n; i++){
+        klv += KLtruncnorm(mu(i), B, tau);
+        V(k).col(l).row(i) = truncmoment1(mu(i), sigma);
+        V2(k).col(l).row(i) = truncmoment2(mu(i), sigma);
+      }
+    }
   }
   }
 };
@@ -158,7 +212,6 @@ class AN : public nnconstr{
                                    const double & lambda,
                                    const arma::uvec dims,
                                    const int & L){
-    int not_k = 1;
     double klv = 0.0;
     for(int l = 0; l < L; l++){
     for(int k = 0; k < 2; k++){
@@ -172,7 +225,6 @@ class AN : public nnconstr{
         V(k).col(l).row(i) = mu(i);
         V2(k).col(l).row(i) = pow(mu(i),2) + sigma2;
       }
-      not_k = 0;
     }
     }
   }
@@ -251,8 +303,6 @@ class SN : public nnconstr{
                                    const double & lambda,
                                    const arma::uvec dims,
                                    const int & L){
-    
-    int not_k = 1;
     double klv = 0.0;
     for(int l = 0; l < L; l++){
     for(int k = 0; k < 1; k++){
@@ -267,7 +317,6 @@ class SN : public nnconstr{
         V(k).col(l).row(i) = mu(i);
         V2(k).col(l).row(i) = pow(mu(i),2) + sigma2;
       }
-      not_k = 0;
     }
     for(int k = 1; k < 2; k++){
       arma::vec vkl = V(k).col(l);

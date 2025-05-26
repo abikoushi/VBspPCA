@@ -1,6 +1,10 @@
 #include "RcppArmadillo.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 
+double lg(double a, double b, double c, double d);
+
+double KLgamma(double a, double b, double c, double d) ;
+
 double klgamma_sub(double a, double b, double c, double d);
 
 double kl2gamma(double a1, double b1, double a2, double b2);

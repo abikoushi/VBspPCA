@@ -9,6 +9,10 @@ read_mtx <- function(readtxt, bag) {
     .Call(`_VBspPCA_read_mtx`, readtxt, bag)
 }
 
+doSVB_norm_woi_diag <- function(V, lambda, y, X, dims, L, constr_type, lr_type, lr_param, bsize, iter, tau, a, b, display_progress) {
+    .Call(`_VBspPCA_doSVB_norm_woi_diag`, V, lambda, y, X, dims, L, constr_type, lr_type, lr_param, bsize, iter, tau, a, b, display_progress)
+}
+
 ra1_norm <- function(a, mean, sd) {
     .Call(`_VBspPCA_ra1_norm`, a, mean, sd)
 }
@@ -33,7 +37,7 @@ doVB_norm_woi_diag <- function(V, lambda, y, X, dims, L, constr_type, iter, tau,
     .Call(`_VBspPCA_doVB_norm_woi_diag`, V, lambda, y, X, dims, L, constr_type, iter, tau, a, b, display_progress)
 }
 
-doSVB_norm_woi_diag <- function(V, lambda, y, X, dims, L, constr_type, lr_type, lr_param, bsize, iter, tau, a, b, display_progress) {
-    .Call(`_VBspPCA_doSVB_norm_woi_diag`, V, lambda, y, X, dims, L, constr_type, lr_type, lr_param, bsize, iter, tau, a, b, display_progress)
+doVB_norm_woi_diag_mtx <- function(V, lambda, readtxt, dims, N1, N, L, constr_type, iter, tau, a, b, display_progress) {
+    .Call(`_VBspPCA_doVB_norm_woi_diag_mtx`, V, lambda, readtxt, dims, N1, N, L, constr_type, iter, tau, a, b, display_progress)
 }
 

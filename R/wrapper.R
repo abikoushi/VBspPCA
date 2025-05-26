@@ -76,11 +76,34 @@ VBPCA_diag <- function(Y, rank, iter, constr_type = "AN",
   V = lapply(dims, initnorm, rank=rank)
   lambda = 1
   res = doVB_norm_woi_diag(V, lambda = lambda, 
-                                     y=Y@x, X = cbind(Y@i, Y@j),
-                                     dims = dims,
-                                     L = rank,
-                                     constr_type = constr_type,
-                                     iter=iter, tau=tau, a=a, b=b,
-                                     display_progress = display_progress)
+                           y=Y@x, X = cbind(Y@i, Y@j),
+                           dims = dims,
+                           L = rank,
+                           constr_type = constr_type,
+                           iter=iter, tau=tau, a=a, b=b,
+                           display_progress = display_progress)
+  return(res)
+}
+
+
+VBPCA_diag_mtx <- function(readtxt, rank, iter,
+                           constr_type="AN",
+                           lambda = 1,
+                           tau=1, a=1, b=1,
+                           display_progress=TRUE){
+  size = size_mtx(readtxt)
+  dims = size[1:2]
+  N = prod(dims)
+  N1 = size[3]
+  V = lapply(dims, initnorm, rank=rank)
+  res = doVB_norm_woi_diag_mtx(V, lambda = lambda, 
+                               readtxt,
+                               dims = dims,
+                               N1 = N1,
+                               N = N,
+                               L = rank,
+                               constr_type=constr_type,
+                               iter=iter, tau=tau, a=a, b=b,
+                               display_progress = display_progress)
   return(res)
 }

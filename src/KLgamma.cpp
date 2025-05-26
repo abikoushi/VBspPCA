@@ -2,6 +2,14 @@
 #include "KLgamma.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 
+double lg(double a, double b, double c, double d){
+  return - c * d / a - b * log(a) - lgamma(b) + (b - 1.0)*(R::digamma(d) + log(c));
+}
+
+double KLgamma(double a, double b, double c, double d) {
+  return lg(c,d,c,d) - lg(a,b,c,d);
+}
+
 double klgamma_sub(double a, double b, double c, double d){
   return - c * d / a - b * log(a) - lgamma(1/b) + (b-1)*(R::digamma(1/d) + log(c));
 }
