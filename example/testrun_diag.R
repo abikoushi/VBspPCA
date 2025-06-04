@@ -1,16 +1,44 @@
 library(Matrix)
 library(VBspPCA)
+library(ggplot2)
 
 miris <- t(log1p(as.matrix(iris[,-5])))
 miris <- as(miris, "TsparseMatrix")
 writeMM(miris, "iris.mtx")
 datpath = "iris.mtx"
-out = VBspPCA:::VBPCA_diag_mtx(datpath, rank = 2, iter = 100, lambda = 10)
-plot(fit_pca(out), as.matrix(miris))
-abline(0,1,lty=2)
-out$obs_prec
-plot(out$mean_col, col=iris$Species)
-plot(out$logprob[-1], type = "l")
+
+system.time({
+  out_an <- VBspPCA:::VBPCA_diag_mtx(datpath,  constr_type = "AN",
+                                     lambda = 10,
+                                     rank = 2, iter = 100,
+                                     tau = 1, a = 1, b = 1)
+})
+
+
+system.time({
+  out_sn <- VBspPCA:::VBPCA_diag_mtx(datpath,  constr_type = "SN",
+                                 rank = 2, iter = 100,
+                                 tau = 1, a = 1, b = 1)
+})
+ 
+system.time({
+  out_nn <- VBspPCA:::VBPCA_diag_mtx(datpath,  constr_type = "NN",
+                                     rank = 2, iter = 100,
+                                     tau = 1, a = 1, b = 1)
+})
+
+col3 <- hcl.colors(3, palette = "Set 2", alpha = 0.5)
+plot(fit_pca(out_an), as.matrix(miris), col=col3[1])
+points(fit_pca(out_sn), as.matrix(miris), col=col3[2])
+points(fit_pca(out_nn), as.matrix(miris), col=col3[3])
+abline(0, 1, col="grey", lty=3)
+plot(out_an$mean_col, col=col3[iris$Species], pch=16)
+plot(out_sn$mean_col, col=col3[iris$Species], pch=16)
+plot(out_nn$mean_col, col=col3[iris$Species], pch=16)
+matplot(cbind(out_an$logprob[-1],
+              out_sn$logprob[-1],
+              out_nn$logprob[-1]), type="l")
+
 
 #####
 ca5 <- rgb(0, 0, 0, 0.5)
@@ -22,8 +50,6 @@ system.time({
                                  rank = 2, iter = 100,
                                  tau = 1, a = 1, b = 1)
 })
-
-plot(fit_pca(out_an), as.matrix(miris))
 
 system.time({
   out_sn <- VBspPCA:::VBPCA_diag(miris,  constr_type = "SN", 
