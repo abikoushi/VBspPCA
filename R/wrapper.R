@@ -68,20 +68,20 @@ initnorm <- function(D, rank){
 }
 
 VBPCA_diag <- function(Y, rank, iter, constr_type = "AN", 
+                       lambda_ini = 1,
                        tau=1, a=1, b=1, display_progress=TRUE){
   if(any(class(Y)=="dgTMatrix")){
     Y <- as(Y, "TsparseMatrix")    
   }
   dims = dim(Y)
   V = lapply(dims, initnorm, rank=rank)
-  lambda = 1
-  res = doVB_norm_woi_diag(V, lambda = lambda, 
-                           y=Y@x, X = cbind(Y@i, Y@j),
-                           dims = dims,
-                           L = rank,
-                           constr_type = constr_type,
-                           iter=iter, tau=tau, a=a, b=b,
-                           display_progress = display_progress)
+  res = doVB_norm_woi_diag_om(V, lambda = lambda_ini, 
+                              y=Y@x, X = cbind(Y@i, Y@j),
+                              dims = dims,
+                              L = rank,
+                              constr_type = constr_type,
+                              iter=iter, tau=tau, a=a, b=b,
+                              display_progress = display_progress)
   return(res)
 }
 
