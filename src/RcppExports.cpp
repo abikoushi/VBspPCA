@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // doVB_norm_woi_diag_om
-Rcpp::List doVB_norm_woi_diag_om(arma::field<arma::mat> V, double lambda, const arma::vec y, const arma::umat X, const arma::uvec dims, const int& L, const std::string& constr_type, const int& iter, const double& tau, const double& a, const double& b, const bool& display_progress);
-RcppExport SEXP _VBspPCA_doVB_norm_woi_diag_om(SEXP VSEXP, SEXP lambdaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP dimsSEXP, SEXP LSEXP, SEXP constr_typeSEXP, SEXP iterSEXP, SEXP tauSEXP, SEXP aSEXP, SEXP bSEXP, SEXP display_progressSEXP) {
+Rcpp::List doVB_norm_woi_diag_om(arma::field<arma::mat> V, double lambda, const arma::vec y, const arma::umat X, const arma::uvec dims, const int& L, const std::string& constr_type, const int& maxit, const double& tau, const double& a, const double& b, const double& tol);
+RcppExport SEXP _VBspPCA_doVB_norm_woi_diag_om(SEXP VSEXP, SEXP lambdaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP dimsSEXP, SEXP LSEXP, SEXP constr_typeSEXP, SEXP maxitSEXP, SEXP tauSEXP, SEXP aSEXP, SEXP bSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -24,18 +24,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< const int& >::type L(LSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type constr_type(constr_typeSEXP);
-    Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< const double& >::type tau(tauSEXP);
     Rcpp::traits::input_parameter< const double& >::type a(aSEXP);
     Rcpp::traits::input_parameter< const double& >::type b(bSEXP);
-    Rcpp::traits::input_parameter< const bool& >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(doVB_norm_woi_diag_om(V, lambda, y, X, dims, L, constr_type, iter, tau, a, b, display_progress));
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(doVB_norm_woi_diag_om(V, lambda, y, X, dims, L, constr_type, maxit, tau, a, b, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 // doVB_norm_woi_diag_mtx
-Rcpp::List doVB_norm_woi_diag_mtx(arma::field<arma::mat> V, double lambda, const std::string& readtxt, const arma::uvec dims, int N1, int N, const int& L, const std::string& constr_type, const int& iter, const double& tau, const double& a, const double& b, const bool& display_progress);
-RcppExport SEXP _VBspPCA_doVB_norm_woi_diag_mtx(SEXP VSEXP, SEXP lambdaSEXP, SEXP readtxtSEXP, SEXP dimsSEXP, SEXP N1SEXP, SEXP NSEXP, SEXP LSEXP, SEXP constr_typeSEXP, SEXP iterSEXP, SEXP tauSEXP, SEXP aSEXP, SEXP bSEXP, SEXP display_progressSEXP) {
+Rcpp::List doVB_norm_woi_diag_mtx(arma::field<arma::mat> V, double lambda, const std::string& readtxt, const arma::uvec dims, const int& L, const std::string& constr_type, const int& maxit, const double& tau, const double& a, const double& b, const double tol);
+RcppExport SEXP _VBspPCA_doVB_norm_woi_diag_mtx(SEXP VSEXP, SEXP lambdaSEXP, SEXP readtxtSEXP, SEXP dimsSEXP, SEXP LSEXP, SEXP constr_typeSEXP, SEXP maxitSEXP, SEXP tauSEXP, SEXP aSEXP, SEXP bSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,16 +43,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type readtxt(readtxtSEXP);
     Rcpp::traits::input_parameter< const arma::uvec >::type dims(dimsSEXP);
-    Rcpp::traits::input_parameter< int >::type N1(N1SEXP);
-    Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< const int& >::type L(LSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type constr_type(constr_typeSEXP);
-    Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< const double& >::type tau(tauSEXP);
     Rcpp::traits::input_parameter< const double& >::type a(aSEXP);
     Rcpp::traits::input_parameter< const double& >::type b(bSEXP);
-    Rcpp::traits::input_parameter< const bool& >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(doVB_norm_woi_diag_mtx(V, lambda, readtxt, dims, N1, N, L, constr_type, iter, tau, a, b, display_progress));
+    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(doVB_norm_woi_diag_mtx(V, lambda, readtxt, dims, L, constr_type, maxit, tau, a, b, tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -229,7 +227,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_VBspPCA_doVB_norm_woi_diag_om", (DL_FUNC) &_VBspPCA_doVB_norm_woi_diag_om, 12},
-    {"_VBspPCA_doVB_norm_woi_diag_mtx", (DL_FUNC) &_VBspPCA_doVB_norm_woi_diag_mtx, 13},
+    {"_VBspPCA_doVB_norm_woi_diag_mtx", (DL_FUNC) &_VBspPCA_doVB_norm_woi_diag_mtx, 11},
     {"_VBspPCA_check_lr", (DL_FUNC) &_VBspPCA_check_lr, 3},
     {"_VBspPCA_read_mtx", (DL_FUNC) &_VBspPCA_read_mtx, 2},
     {"_VBspPCA_doSVB_norm_woi_diag", (DL_FUNC) &_VBspPCA_doSVB_norm_woi_diag, 15},

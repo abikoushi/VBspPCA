@@ -4,8 +4,6 @@
 #include "lr.h"
 #include "KLgamma.h"
 #include "ELBO.h"
-#include <progress.hpp>
-#include <progress_bar.hpp>
 #include <memory>
 #include <iostream>
 #include <string>
@@ -33,7 +31,7 @@ double sumupperproduct(const arma::mat V_row, const arma::mat V_col){
   for(arma::uword i = 0; i < V_row.n_rows; i++){
     for(arma::uword j = 0; j < V_col.n_rows; j++){
       for(arma::uword l = 0; l < (L-1); l++){
-        for(arma::uword k = l+1; k < L; k++){
+        for(arma::uword k = (l+1); k < L; k++){
           out += V_row(i,l)*V_col(j,l) * V_row(i,k)*V_col(j,k);
         }
       }
@@ -52,8 +50,7 @@ double up_lambda_2d_om(double & lambda,
                         const double & a,
                         const double & b){
   double sumyf_new = sum(y % sum(V(0).rows(X.col(0)) % V(1).rows(X.col(1)), 1));
-  double tmp = sumZ2*0.5 - sumyf_new + 
-    0.5*sumdotproduct(V2(0),V2(1)) + sumupperproduct(V(0), V(1));
+  double tmp = sumZ2*0.5 - sumyf_new + 0.5*sumdotproduct(V2(0),V2(1)) + sumupperproduct(V(0), V(1));
   double bhat = tmp + b;
   lambda = ahat/bhat;
   return (-lambda*tmp) + 0.5*std::log(lambda) - KLgamma(a, b, ahat, bhat);
@@ -100,12 +97,12 @@ Rcpp::List doVB_norm_woi_diag_om(arma::field<arma::mat> V,
                                   const arma::uvec dims,
                                   const int & L,
                                   const std::string & constr_type,
-                                  const int & iter,
+                                  const int & maxit,
                                   const double & tau,
                                   const double & a, const double & b,
-                                  const bool & display_progress){
+                                  const double & tol){
   int K = 2;
-  arma::vec loglik = arma::zeros<arma::vec>(iter);
+  arma::vec loglik = arma::zeros<arma::vec>(maxit);
   double ahat = 0.5 * prod(dims) + a;
   arma::field<arma::mat> V2(2);
   for(int k = 0; k < K; k++){
@@ -120,11 +117,13 @@ Rcpp::List doVB_norm_woi_diag_om(arma::field<arma::mat> V,
   }
   std::unique_ptr<nnconstr> constr;
   set_constr(constr, constr_type);
-  Progress pb(iter, display_progress);
-  for(int i = 0; i < iter; i++){
+  for(int i = 1; i < maxit; i++){
     double klv = up_vpar_2D_om(eta, H, V, V2, constr, y, X, dims, L, lambda, tau);
     loglik.row(i) = up_lambda_2d_om(lambda, y, X, V, V2, sumy2, ahat, a, b);
-    pb.increment();
+    if( abs(loglik(i)-loglik(i-1)) < tol ){
+      loglik = loglik.rows(1,i);
+      break;
+    }
   }
   return Rcpp::List::create(Rcpp::Named("mean_row") = V(0),
                             Rcpp::Named("mean_col") = V(1),
@@ -228,15 +227,15 @@ Rcpp::List doVB_norm_woi_diag_mtx(arma::field<arma::mat> V,
                                   double lambda,
                                   const std::string & readtxt,
                                   const arma::uvec dims,
-                                  int N1, int N,
                                   const int & L,
                                   const std::string & constr_type,
-                                  const int & iter,
+                                  const int & maxit,
                                   const double & tau,
                                   const double & a, const double & b,
-                                  const bool & display_progress){
+                                  const double tol){
   int K = 2;
-  arma::vec loglik = arma::zeros<arma::vec>(iter);
+  int N = prod(dims);
+  arma::vec loglik = arma::zeros<arma::vec>(maxit);
   double ahat = 0.5 * N + a;
   arma::field<arma::mat> V2(2);
   for(int k = 0; k < K; k++){
@@ -276,13 +275,16 @@ Rcpp::List doVB_norm_woi_diag_mtx(arma::field<arma::mat> V,
   }
   std::unique_ptr<nnconstr> constr;
   set_constr(constr, constr_type);
-  Progress pb(iter, display_progress);
-  for(int i = 0; i < iter; i++){
+
+  for(int i = 1; i < maxit; i++){
     double klv = up_vpar_2D_mtx(eta, H, V, V2, 
                                 constr, readtxt, dims,
                                 L, lambda, tau);
     loglik.row(i) = up_lambda_2d_mtx(lambda, readtxt, V, V2, sumy2, ahat, a, b);
-    pb.increment();
+    if( abs(loglik(i)-loglik(i-1)) < tol ){
+      loglik = loglik.rows(1,i);
+      break;
+    }
   }
   return Rcpp::List::create(Rcpp::Named("mean_row") = V(0),
                             Rcpp::Named("mean_col") = V(1),

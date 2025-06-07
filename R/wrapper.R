@@ -67,11 +67,12 @@ initnorm <- function(D, rank){
   matrix(abs(rnorm(D*rank)), D, rank)
 }
 
-VBPCA_diag <- function(Y, rank, iter, constr_type = "AN", 
+VBPCA_diag <- function(Y, rank, maxit, constr_type = "AN", 
                        lambda_ini = 1,
-                       tau=1, a=1, b=1, display_progress=TRUE){
-  if(any(class(Y)=="dgTMatrix")){
-    Y <- as(Y, "TsparseMatrix")    
+                       tau=1, a=1, b=1,
+                       tol=0.01){
+  if(!any(class(Y)=="dgTMatrix")){
+    Y <- as(Y, "TsparseMatrix")
   }
   dims = dim(Y)
   V = lapply(dims, initnorm, rank=rank)
@@ -80,30 +81,29 @@ VBPCA_diag <- function(Y, rank, iter, constr_type = "AN",
                               dims = dims,
                               L = rank,
                               constr_type = constr_type,
-                              iter=iter, tau=tau, a=a, b=b,
-                              display_progress = display_progress)
+                              maxit = maxit,
+                              tau=tau, a=a, b=b,
+                              tol=tol)
   return(res)
 }
 
 
-VBPCA_diag_mtx <- function(readtxt, rank, iter,
+VBPCA_diag_mtx <- function(readtxt, rank, maxit,
                            constr_type="AN",
-                           lambda = 1,
+                           lambda_ini = 1,
                            tau=1, a=1, b=1,
-                           display_progress=TRUE){
+                           tol=0.01){
   size = size_mtx(readtxt)
   dims = size[1:2]
   N = prod(dims)
   N1 = size[3]
   V = lapply(dims, initnorm, rank=rank)
-  res = doVB_norm_woi_diag_mtx(V, lambda = lambda, 
+  res = doVB_norm_woi_diag_mtx(V, lambda = lambda_ini, 
                                readtxt,
                                dims = dims,
-                               N1 = N1,
-                               N = N,
                                L = rank,
                                constr_type=constr_type,
-                               iter=iter, tau=tau, a=a, b=b,
-                               display_progress = display_progress)
+                               maxit=maxit, tau=tau, a=a, b=b,
+                               tol=tol)
   return(res)
 }

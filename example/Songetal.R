@@ -1,10 +1,15 @@
 library(Matrix)
 library(VBspPCA)
 library(ggplot2)
+library(irlba)
 
 datdir = scan("datapath.txt", what = character())
 datpath = dir(datdir, full.names = TRUE)
 dat = readMM(datpath[2])
+L=30
+res = prcomp(dat,rank. = 30)
+
+
 #image(dat)
 dim(dat)
 #[1] 10147  8772

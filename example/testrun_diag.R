@@ -7,23 +7,25 @@ miris <- as(miris, "TsparseMatrix")
 writeMM(miris, "iris.mtx")
 datpath = "iris.mtx"
 
+L = 3
 system.time({
   out_an <- VBspPCA:::VBPCA_diag_mtx(datpath,  constr_type = "AN",
-                                     lambda = 10,
-                                     rank = 2, iter = 100,
+                                     rank = L, maxit = 100,
+                                     tol = 0.1,
                                      tau = 1, a = 1, b = 1)
 })
 
-
 system.time({
   out_sn <- VBspPCA:::VBPCA_diag_mtx(datpath,  constr_type = "SN",
-                                 rank = 2, iter = 100,
+                                 rank = L, maxit = 100,
+                                 tol = 0.1,
                                  tau = 1, a = 1, b = 1)
 })
  
 system.time({
   out_nn <- VBspPCA:::VBPCA_diag_mtx(datpath,  constr_type = "NN",
-                                     rank = 2, iter = 100,
+                                     rank = L, maxit = 100,
+                                     tol = 0.1,
                                      tau = 1, a = 1, b = 1)
 })
 
@@ -36,10 +38,12 @@ ggplot(data = NULL)+
   theme_bw()
 
 
-matplot(cbind(out_an$logprob[-1],
-              out_sn$logprob[-1],
-              out_nn$logprob[-1]), type="l")
-
+ggplot(data=NULL)+
+  geom_line(aes(x=2:length(out_an$logprob), y=out_an$logprob[-1], colour="AN", linetype="AN"))+
+  geom_line(aes(x=2:length(out_sn$logprob), y=out_sn$logprob[-1], colour="SN", linetype="SN"))+
+  geom_line(aes(x=2:length(out_nn$logprob), y=out_nn$logprob[-1], colour="NN", linetype="NN"))+
+  labs(colour="method", linetype="method", y="log-prob", x="iter")+
+  theme_bw()
 
 #####
 
@@ -47,19 +51,19 @@ matplot(cbind(out_an$logprob[-1],
 system.time({
   out_an <- VBspPCA:::VBPCA_diag(miris, 
                                  constr_type = "AN", 
-                                 rank = 2, iter = 100,
+                                 rank = 2, maxit = 100,
                                  tau = 1, a = 1, b = 1)
 })
 
 system.time({
   out_sn <- VBspPCA:::VBPCA_diag(miris,  constr_type = "SN", 
-                                 rank = 2, iter = 100,
+                                 rank = 2, maxit = 100,
                                  tau = 1, a = 1, b = 1)
 })
 
 system.time({
   out_nn <- VBspPCA:::VBPCA_diag(miris,  constr_type = "NN", 
-                                 rank = 2, iter = 100,
+                                 rank = 2, maxit = 100,
                                  tau = 1, a = 1, b = 1)
 })
 
@@ -69,9 +73,9 @@ system.time({
 
 
 ggplot(data=NULL)+
-  geom_line(aes(x=2:100, y=out_an$logprob[-1], colour="AN", linetype="AN"))+
-  geom_line(aes(x=2:100, y=out_sn$logprob[-1], colour="SN", linetype="SN"))+
-  geom_line(aes(x=2:100, y=out_nn$logprob[-1], colour="NN", linetype="NN"))+
+  geom_line(aes(x=2:length(out_an$logprob), y=out_an$logprob[-1], colour="AN", linetype="AN"))+
+  geom_line(aes(x=2:length(out_sn$logprob), y=out_sn$logprob[-1], colour="SN", linetype="SN"))+
+  geom_line(aes(x=2:length(out_nn$logprob), y=out_nn$logprob[-1], colour="NN", linetype="NN"))+
   labs(colour="method", linetype="method")+
   theme_bw()
 
