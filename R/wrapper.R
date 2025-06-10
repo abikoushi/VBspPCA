@@ -107,3 +107,25 @@ VBPCA_diag_mtx <- function(readtxt, rank, maxit,
                                tol=tol)
   return(res)
 }
+
+VBPCA_diag_bin <- function(read_x, read_y,
+                           rank, maxit, 
+                           size,
+                           constr_type="AN",
+                           lambda_ini = 1,
+                           tau=1, a=1, b=1,
+                           tol=0.01){
+  dims = size[1:2]
+  N1 = size[3]
+  V = lapply(dims, initnorm, rank=rank)
+  res = doVB_norm_woi_diag_bin(V, 
+                               lambda = lambda_ini, 
+                               N1 = N1,
+                               read_x, read_y,
+                               dims = dims,
+                               L = rank,
+                               constr_type=constr_type,
+                               maxit=maxit, tau=tau, a=a, b=b,
+                               tol=tol)
+  return(res)
+}

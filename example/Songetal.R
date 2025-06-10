@@ -4,19 +4,19 @@ library(ggplot2)
 library(irlba)
 
 datdir = scan("datapath.txt", what = character())
-datpath = dir(datdir, full.names = TRUE)
+datpath = dir(datdir[1], full.names = TRUE)
 dat = readMM(datpath[2])
-L=30
-res = prcomp(dat,rank. = 30)
 
-
+# res = prcomp(dat,rank. = 30)
+L=20
+100*2428.359/(60*60)
 #image(dat)
 dim(dat)
 #[1] 10147  8772
 system.time({
   out_an <- VBspPCA:::VBPCA_diag(dat, 
                                  constr_type = "AN", 
-                                 rank = 20, iter = 100,
+                                 rank = 20, maxit = 100,
                                  tau = 1, a = 1, b = 1)
 })
 #    user   system  elapsed 
