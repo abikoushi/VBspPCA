@@ -1,5 +1,4 @@
-
-####
+library(Matrix)
 
 SVBPCA_diag <- function(Y, rank, iter, bsize,
                         lr_type = "exponential",
@@ -27,19 +26,19 @@ SVBPCA_diag <- function(Y, rank, iter, bsize,
   return(res)
 }
 
-dim(miris)
+miris <- as(log1p(as.matrix(iris[,-5])),"TsparseMatrix")
+
 system.time({
   out_nn <- SVBPCA_diag(miris,  bsize = 100,
                         constr_type = "NN", 
-                        lr_param = c(15,0.9),
-                        rank = 2, iter = 200,
-                        lambda=200,
+                        lr_param = c(15,0.8),
+                        rank = 2, iter = 100,
+                        lambda = 200,
                         tau = 1, a = 1, b = 1)
 })
 print(out_nn$obs_prec)
 #[1] 301
 
-plot(out_nn$mean_col, col=col3[iris$Species], pch=16)
 plot(fit_pca(out_nn), as.matrix(miris))
 abline(0,1,lty=3)
 out_nn$mean_row

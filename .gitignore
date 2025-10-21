@@ -9,3 +9,8 @@ src/*.dll
 datapath.txt
 *.rds
 *.bin
+*.pdf
+*.Rdata
+*.RData
+*.rdata
+ 

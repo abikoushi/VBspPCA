@@ -63,19 +63,21 @@ fit_pca <- function(out){
   return(res)
 }
 
-initnorm <- function(D, rank){
-  matrix(abs(rnorm(D*rank)), D, rank)
+initnorm <- function(D, rank, sd=1){
+  matrix(abs(rnorm(D*rank, 0, sd)), D, rank)
 }
 
 VBPCA_diag <- function(Y, rank, maxit, constr_type = "AN", 
                        lambda_ini = 1,
                        tau=1, a=1, b=1,
-                       tol=0.01){
+                       tol=0.01,
+                       init_mean=1){
   if(!any(class(Y)=="dgTMatrix")){
     Y <- as(Y, "TsparseMatrix")
   }
   dims = dim(Y)
-  V = lapply(dims, initnorm, rank=rank)
+  init_sd = (sqrt(init_mean) * sqrt(pi))/sqrt(2)
+  V = lapply(dims, initnorm, rank=rank, sd = init_sd/sqrt(rank))
   res = doVB_norm_woi_diag_om(V, lambda = lambda_ini, 
                               y=Y@x, X = cbind(Y@i, Y@j),
                               dims = dims,

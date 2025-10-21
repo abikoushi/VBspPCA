@@ -2,7 +2,6 @@ library(Matrix)
 library(VBspPCA)
 miris <- t(as.matrix(iris[,-5]))
 dim(miris)
-###
 
 system.time({
   out <- VBPCA(miris, rank = 2, iter = 50, prior_prec = 1, a=1, b=1,

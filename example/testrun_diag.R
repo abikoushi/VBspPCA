@@ -2,9 +2,21 @@ library(Matrix)
 library(VBspPCA)
 library(ggplot2)
 
-miris <- t(log1p(as.matrix(iris[,-5])))
+miris <- log1p(as.matrix(iris[,-5]))
+res = prcomp(miris)
+ggplot(data.frame(res$x, Species=iris$Species))+
+  geom_point(aes(x=PC1, y=PC2, colour = Species, shape = Species))+
+  scale_color_brewer(palette = "Set2")+
+  guides(colour = guide_legend(override.aes = list(size=3)))+
+  theme_bw(20)
+# ggsave("iris.pdf", width = 7, height = 5)
+
+
+miris <- log(t(as.matrix(iris[,-5])))
+miris[miris<0] = 0
 miris <- as(miris, "TsparseMatrix")
 
+writeMM(miris, "iris.mtx")
 writeBin(c(rbind(miris@i,miris@j)), "x.bin")
 writeBin(c(miris@x), "y.bin")
 
@@ -57,12 +69,12 @@ ggplot(data=NULL)+
   theme_bw()
 
 col3 <- hcl.colors(3, palette = "Set 2", alpha = 0.9)
-plot(out_an$mean_col, col=col3[iris$Species], pch=16)
-plot(out_sn$mean_col, col=col3[iris$Species], pch=16)
-plot(out_nn$mean_col, col=col3[iris$Species], pch=16)
+plot(out_an$mean_row, col=col3[iris$Species], pch=16)
+plot(out_sn$mean_row, col=col3[iris$Species], pch=16)
+plot(out_nn$mean_row, col=col3[iris$Species], pch=16)
 ####
 
-writeMM(miris, "iris.mtx")
+
 datpath = "iris.mtx"
 
 L = 2

@@ -19,12 +19,29 @@ plot(seq_len(length.out = length(row_meanvar$var)),
      cumvar,type="l")
 abline(v = 2000, lty=2)
 
-VBspPCA:::size_mtx(datpath[2])
+size = VBspPCA:::size_mtx(datpath[2])
+M = readMM(datpath[2])
 
-L=30
+writeBin(c(rbind(M@i,M@j)), "moca_x.bin")
+writeBin(c(log1p(M@x)), "moca_y.bin")
+
+
+L=20
+
 system.time({
-  out_an <- VBspPCA:::VBPCA_diag_mtx(datpath[2],  constr_type = "AN",
-                                     rank = L, maxit = 2,
+  out_an <- VBspPCA:::VBPCA_diag_bin(read_x="moca_x.bin",
+                                     read_y="moca_y.bin",
+                                     rank = L, maxit=2, 
+                                     size = size,
+                                     constr_type = "AN",
                                      tol = 0.1,
                                      tau = 1, a = 1, b = 1)
 })
+
+
+# system.time({
+#   out_an <- VBspPCA:::VBPCA_diag_mtx(datpath[2],  constr_type = "AN",
+#                                      rank = L, maxit = 2,
+#                                      tol = 0.1,
+#                                      tau = 1, a = 1, b = 1)
+# })

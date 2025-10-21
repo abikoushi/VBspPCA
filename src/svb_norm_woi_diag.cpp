@@ -96,6 +96,23 @@ double up_bhat_s(double & bhat,
   return - KLgamma(a, b, ahat, bhat);
 }
 
+double up_bhat_s(double & bhat,
+                 const double & ahat, 
+                 const double & a, const double & b,
+                 const double & sumy2,
+                 const double & sumyf,
+                 const double & sumf2,
+                 const arma::mat & fm,
+                 const double NS){
+  double tmp = 0.0;
+  tmp += sumy2*0.5;
+  tmp -= NS*sumyf;
+  tmp += sumf2*0.5;
+  tmp +=  NS*upsum(fm);
+  bhat = tmp + b;
+  return - KLgamma(a, b, ahat, bhat);
+}
+
 
 
 // [[Rcpp::export]]
@@ -128,6 +145,7 @@ Rcpp::List doSVB_norm_woi_diag(arma::field<arma::mat> V,
   arma::mat fm = V(0).rows(X.col(0)) % V(1).rows(X.col(1));
   arma::vec f = sum(fm, 1);
   double sumf2 = arma::accu( V2(0).rows(X.col(0)) % V2(1).rows(X.col(1)) );
+  double sumy2 = sum(y%y);
   arma::field<arma::mat> eta = V;
   arma::mat H(K,L);
   H.fill(0.0);
@@ -161,16 +179,19 @@ Rcpp::List doSVB_norm_woi_diag(arma::field<arma::mat> V,
       for(int k = 0; k < K; k++){
         eta(k) = rho2*eta(k) + rho*eta_s(k);
       }
-      loglik.row(epoc) += up_bhat_s(bhat_s, ahat, a, b, Sy, fs, sumf2, fms, NS);
       H = rho2*H + rho*H_s;
-      bhat = rho2*bhat + rho*bhat_s;
-      //lambda = ahat/bhat;
-      constr -> up_V_from_etaH_2D(V, V2, eta, H, tau, lambda, dims, L);
+      for(int l = 0; l<L; l++){
+        constr -> up_V_from_etaH_2D(V, V2, eta, H, tau, lambda, dims, l);
+      }
       fms = V(0).rows(SX.col(0)) % V(1).rows(SX.col(1));
       fs = sum(fms, 1);
       f.rows(bag) = fs;
       fm.rows(bag) = fms;
       sumf2 = arma::accu( V2(0).rows(X.col(0)) % V2(1).rows(X.col(1)) );
+      //loglik.row(epoc) += up_bhat_s(bhat_s, ahat, a, b, Sy, fs, sumf2, fms, NS);
+      // loglik.row(epoc) += up_bhat_s(bhat_s, ahat, a, b, sumy2, sum(Sy%fs), sumf2, fms, NS);
+      // bhat = rho2*bhat + rho*bhat_s;
+      //lambda = ahat/bhat;
     }
     pb.increment();
   }

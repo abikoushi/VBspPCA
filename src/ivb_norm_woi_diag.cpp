@@ -102,7 +102,6 @@ Rcpp::List doVB_norm_woi_diag_om(arma::field<arma::mat> V,
                                   const double & a, const double & b,
                                   const double & tol){
   int K = 2;
-  arma::vec loglik = arma::zeros<arma::vec>(maxit);
   double ahat = 0.5 * prod(dims) + a;
   arma::field<arma::mat> V2(2);
   for(int k = 0; k < K; k++){
@@ -117,13 +116,17 @@ Rcpp::List doVB_norm_woi_diag_om(arma::field<arma::mat> V,
   }
   std::unique_ptr<nnconstr> constr;
   set_constr(constr, constr_type);
-  for(int i = 1; i < maxit; i++){
+  arma::vec loglik = arma::zeros<arma::vec>(maxit+1);
+  for(int i = 1; i < maxit + 1; i++){
     double klv = up_vpar_2D_om(eta, H, V, V2, constr, y, X, dims, L, lambda, tau);
     loglik.row(i) = up_lambda_2d_om(lambda, y, X, V, V2, sumy2, ahat, a, b);
     if( abs(loglik(i)-loglik(i-1)) < tol ){
       loglik = loglik.rows(1,i);
       break;
     }
+  }
+  if(loglik.n_rows == maxit+1){
+    loglik.shed_row(0);
   }
   return Rcpp::List::create(Rcpp::Named("mean_row") = V(0),
                             Rcpp::Named("mean_col") = V(1),
@@ -232,7 +235,7 @@ Rcpp::List doVB_norm_woi_diag_bin(arma::field<arma::mat> V,
                                   const double tol){
   int K = 2;
   int N = prod(dims);
-  arma::vec loglik = arma::zeros<arma::vec>(maxit);
+
   double ahat = 0.5 * N + a;
   arma::field<arma::mat> V2(2);
   for(int k = 0; k < K; k++){
@@ -257,8 +260,8 @@ Rcpp::List doVB_norm_woi_diag_bin(arma::field<arma::mat> V,
   }
   std::unique_ptr<nnconstr> constr;
   set_constr(constr, constr_type);
-  
-  for(int i = 1; i < maxit; i++){
+  arma::vec loglik = arma::zeros<arma::vec>(maxit+1);
+  for(int i = 1; i < maxit+1; i++){
     double klv = up_vpar_2D_bin(eta, H, V, V2, 
                                 constr, N1, readbin_x, readbin_y, dims,
                                 L, lambda, tau);
@@ -267,6 +270,9 @@ Rcpp::List doVB_norm_woi_diag_bin(arma::field<arma::mat> V,
       loglik = loglik.rows(1,i);
       break;
     }
+  }
+  if(loglik.n_rows == maxit+1){
+    loglik.shed_row(0);
   }
   return Rcpp::List::create(Rcpp::Named("mean_row") = V(0),
                             Rcpp::Named("mean_col") = V(1),
